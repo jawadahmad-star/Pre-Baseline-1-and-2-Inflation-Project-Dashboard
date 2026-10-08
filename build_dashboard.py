@@ -204,6 +204,7 @@ def build_records(n, df, frame, choices, enum_map):
     df["_d"] = parse_dates(df)
     df = df[df["_d"].notna()]
     blk_of = dict(zip(frame["firm_id"].astype(int), frame["blk"]))
+    role_of = dict(zip(frame["firm_id"].astype(int), frame["sample_role"]))   # 1 = main sample, 2 = replacement
     fid = num(df["firm_id"]) if "firm_id" in df.columns else pd.Series(np.nan, index=df.index)
 
     g = lambda c: df[c] if c in df.columns else pd.Series(np.nan, index=df.index)
@@ -225,6 +226,7 @@ def build_records(n, df, frame, choices, enum_map):
         rec = {
             "s": n, "d": clean(df.at[i, "_d"]),
             "blk": blk_of.get(int(fid[i]), "Not in frame") if pd.notna(fid[i]) else "Not in frame",
+            "rl": (int(role_of[int(fid[i])]) if pd.notna(fid[i]) and int(fid[i]) in role_of and pd.notna(role_of[int(fid[i])]) else None),
             "st": shop_l.get(str(int(shop[i])), "Other") if pd.notna(shop[i]) else None,
             "en": enum_map.get(int(enum[i]), "Other") if pd.notna(enum[i]) else "Not recorded",
             "oc": sc, "ou": status_l.get(str(sc)) if sc else "Not recorded",
@@ -337,6 +339,8 @@ def main():
             "label": cfg["survey_labels"][str(n)],
             "target": int(tgt) if tgt else int(len(role1)),
             "frame_n": int(len(fr)),
+            "repl_n": int((fr["sample_role"] == 2).sum()),
+            "repl_blocks": {k: int(v) for k, v in fr[fr["sample_role"] == 2]["blk"].value_counts().items()},
             "blocks": {k: int(v) for k, v in role1["blk"].value_counts().items()},
             "frame_blocks": {k: int(v) for k, v in fr["blk"].value_counts().items()},
             "source": sources.get(n),
@@ -354,7 +358,7 @@ def main():
                   ("educ4", "understand3", "framing3", "dist_cat", "freq5", "ymnd4", "bus_rel", "soc_rel", "known_dur", "key_attr", "status_survey")},
     }
     # ---- PII guard: only whitelisted keys may be present ----
-    allowed = {"s", "d", "blk", "st", "en", "oc", "ou", "cm", "ed", "age", "ag", "dur", "mt", "fy", "emp", "area", "e1", "elo", "ehi",
+    allowed = {"s", "d", "blk", "rl", "st", "en", "oc", "ou", "cm", "ed", "age", "ag", "dur", "mt", "fy", "emp", "area", "e1", "elo", "ehi",
                "pm", "plo", "phi", "un1", "un2", "calc", "fr", "c", "e", "src", "nf", "dcat", "fq", "mem", "mq", "rel", "soc", "kn", "tw", "attr"}
     bad = {k for r in records for k in r} - allowed
     assert not bad, f"Non-whitelisted fields in payload: {bad}"

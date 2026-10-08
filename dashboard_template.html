@@ -318,6 +318,8 @@
     .mz-table td.num, .mz-table th.num { text-align:right; }
     .mz-table tr.hl td { background:var(--rs-navy-50); font-weight:600; color:var(--text); }
 
+    .how-to { background:var(--tint-amber); color:var(--on-tint-amber); border-radius:10px; padding:10px 14px; font-size:12.5px; line-height:1.6; margin:0 0 12px; }
+    .how-to b { font-weight:700; }
     .print-only { display:none; }
     @media (max-width:1000px) { .btn.filters-toggle { display:inline-block; } }
     @media (max-width:640px) {
@@ -395,7 +397,7 @@
       <button class="nav-tab" data-p="exp" onclick="showPanel('exp',this)">📈 Inflation Expectations</button>
       <button class="nav-tab" data-p="mod1" data-sv="1" onclick="showPanel('mod1',this)">🧠 Understanding &amp; Decisions<span class="sv-tag">PB1</span></button>
       <button class="nav-tab" data-p="mod2" data-sv="2" onclick="showPanel('mod2',this)">🔗 Communication Network<span class="sv-tag">PB2</span></button>
-      <button class="nav-tab" data-p="trk" onclick="showPanel('trk',this)">🗺️ Block Tracker &amp; Data</button>
+      <button class="nav-tab" data-p="trk" onclick="showPanel('trk',this)">🗺️ Block Tracker</button>
     </nav>
   </div>
 </div>
@@ -432,7 +434,6 @@
       <div class="filter" id="f-shop"><label for="flt-shop">Shop type</label><select id="flt-shop" onchange="onFilter('shop',this.value)"></select></div>
       <div class="filter" id="f-edu"><label for="flt-edu">Manager education</label><select id="flt-edu" onchange="onFilter('edu',this.value)"></select></div>
       <div class="filter" id="f-age"><label for="flt-age">Manager age group</label><select id="flt-age" onchange="onFilter('age',this.value)"></select></div>
-      <div class="filter" id="f-en"><label for="flt-en">Enumerator</label><select id="flt-en" onchange="onFilter('en',this.value)"></select></div>
       <div class="filter" id="f-from"><label for="flt-from">Date from</label><input type="date" id="flt-from" onchange="onFilter('from',this.value)"></div>
       <div class="filter" id="f-to"><label for="flt-to">Date to</label><input type="date" id="flt-to" onchange="onFilter('to',this.value)"></div>
     </div>
@@ -487,7 +488,7 @@
     </div>
     <div class="tbl-block">
       <div class="tbl-title">Pre-Baseline 1 vs Pre-Baseline 2</div>
-      <div class="tbl-desc">Side-by-side summary of both surveys. Location, enumerator, date and profile filters apply to both columns.</div>
+      <div class="tbl-desc">Side-by-side summary of both surveys. Location, date and profile filters apply to both columns.</div>
       <div class="mz-table-wrap"><div class="mz-scroll" style="max-height:none"><table class="mz-table" id="cmp-table"></table></div></div>
     </div>
     <p class="footnote">Target = shops in the sampling frame flagged as the primary sample (sample_role&nbsp;=&nbsp;1); replacement shops are visited only when a primary shop cannot be interviewed. Completed = interview finished with the manager's consent. Expectations outside the valid range are excluded from averages.</p>
@@ -554,7 +555,7 @@
       <div class="section-header-accent"></div>
       <div>
         <div class="eyebrow">Section 04 · Pre-Baseline 1 · Modules A, C &amp; E</div>
-        <h2>Understanding &amp; Planned Decisions</h2>
+        <h2>Understanding &amp; Planned Decisions <span class="warn-pill" style="vertical-align:middle;font-size:11px">Pre-Baseline 1 only</span></h2>
         <p>How well managers understand inflation, which way they say they will adjust prices, wages, borrowing, investment and staffing over the next three months, and how those plans change once they are told the official inflation forecast.</p>
       </div>
     </div>
@@ -565,8 +566,8 @@
       <div class="chart-card"><h3>Percentage Calculation Test</h3><div class="chart-desc">“100 Rs rises by 3%” — correct answer is 103</div><div class="chart-wrap"><canvas id="chartCalc"></canvas></div></div>
     </div>
     <div class="chart-grid cols-2">
-      <div class="chart-card"><h3>Easier Way to Describe Inflation</h3><div class="chart-desc">“Inflation is 6%” vs “Rs 100 today costs Rs 106 next year”</div><div class="chart-wrap"><canvas id="chartFraming"></canvas></div></div>
-      <div class="chart-card"><h3>Average Planned Change, Before vs After Information</h3><div class="chart-desc">Mean planned % change over the next 3 months, for each decision</div><div class="chart-wrap auto"><canvas id="chartDecMean"></canvas></div></div>
+      <div class="chart-card"><h3>Easier Way to Describe Inflation</h3><div class="chart-desc">Which explanation managers found easier to understand: a percentage (“inflation is 6%”) or a rupee example (“Rs 100 today costs Rs 106 next year”)</div><div class="chart-wrap"><canvas id="chartFraming"></canvas></div></div>
+      <div class="chart-card"><h3>How Managers Plan to Change Each Decision</h3><div class="chart-desc">Average planned change over the next 3 months, <b>before</b> and <b>after</b> being told the official inflation forecast (8.4%)</div><div class="how-to" id="decRead"></div><div class="chart-wrap auto"><canvas id="chartDecMean"></canvas></div></div>
     </div>
     <div class="chart-grid cols-2">
       <div class="chart-card"><h3>Direction of Plans — Before Information</h3><div class="chart-desc">Stacked: share of managers planning to decrease, keep or increase</div><div class="chart-wrap auto"><canvas id="chartDecPre"></canvas></div></div>
@@ -581,13 +582,13 @@
       <div class="section-header-accent"></div>
       <div>
         <div class="eyebrow">Section 04 · Pre-Baseline 2 · Module B</div>
-        <h2>Communication Network</h2>
+        <h2>Communication Network <span class="warn-pill" style="vertical-align:middle;font-size:11px">Pre-Baseline 2 only</span></h2>
         <p>Where managers get their inflation information, how often and how far they talk to other firms in the bazaar, and what makes a conversation memorable — a picture of how inflation information travels between shops.</p>
       </div>
     </div>
     <div class="kpi-grid" id="m2-kpis"></div>
     <div class="chart-grid cols-2">
-      <div class="chart-card"><h3>Importance of Information Sources</h3><div class="chart-desc">Mean rating, 0 (not relevant) to 10 (very important)</div><div class="chart-wrap tall"><canvas id="chartSrc"></canvas></div></div>
+      <div class="chart-card"><h3>Importance of Information Sources</h3><div class="chart-desc">How much managers rely on each source to form inflation expectations: average score from 0 (not relevant) to 10 (very important)</div><div class="chart-wrap tall"><canvas id="chartSrc"></canvas></div></div>
       <div class="chart-card"><h3>Other Firms Spoken To (3 months)</h3><div class="chart-desc">Number of managers by count of firms they discussed inflation with</div><div class="chart-wrap tall"><canvas id="chartNF"></canvas></div></div>
     </div>
     <div class="chart-grid cols-3">
@@ -614,9 +615,9 @@
     <div class="section-header">
       <div class="section-header-accent"></div>
       <div>
-        <div class="eyebrow">Section 05 · Operational tracker</div>
-        <h2>Block Tracker &amp; Data</h2>
-        <p>Completion status for every block in the sampling frame, plus a de-identified log of every shop visit. Search, click any column header to sort, and export either table to CSV. Manager-profile filters (shop type, education, age) apply to the interview log only.</p>
+        <div class="eyebrow">Section 05 · Sample tracker</div>
+        <h2>Block Tracker</h2>
+        <p>Progress against the 50-shop target, split between the <b>main sample</b> (the shops originally selected) and <b>replacement shops</b> (visited only when a main shop refuses or cannot be interviewed). Search, click any column header to sort, and export the table to CSV.</p>
       </div>
     </div>
     <div class="kpi-grid" id="tk-kpis"></div>
@@ -625,15 +626,15 @@
 
     <div class="chart-grid" style="margin-top:28px">
       <div class="chart-card full">
-        <h3>Visit Outcomes by Enumerator</h3>
-        <div class="chart-desc">Stacked count of completed, partial, refused and not-reached visits per field team member (enumerators shown as anonymised codes)</div>
-        <div class="chart-wrap auto"><canvas id="chartEnums"></canvas></div>
+        <h3>Main Sample vs Replacement Shops, by Block</h3>
+        <div class="chart-desc">Number of shop visits in each block: main-sample shops (completed / not interviewed) and replacement shops (completed / not interviewed)</div>
+        <div class="chart-wrap auto"><canvas id="chartRole"></canvas></div>
       </div>
     </div>
 
     <div class="tbl-block">
       <div class="tbl-title">Block Completion Tracker</div>
-      <div class="tbl-desc">Completed interviews against the primary-sample target in each block.</div>
+      <div class="tbl-desc">Target = main-sample shops in the block. Completed interviews from main and replacement shops both count toward the target.</div>
       <div class="mz-toolbar">
         <input type="text" id="blk-search" class="mz-search" placeholder="🔍  Search block…" oninput="renderTable('blk')">
         <select id="blk-status" class="mz-filter" onchange="renderTable('blk')">
@@ -645,19 +646,7 @@
       </div>
       <div class="mz-table-wrap"><div class="mz-scroll"><table class="mz-table" id="blk-table"><thead></thead><tbody></tbody></table></div></div>
     </div>
-
-    <div class="tbl-block">
-      <div class="tbl-title">Interview Log (de-identified)</div>
-      <div class="tbl-desc">One row per shop visit. No names, phone numbers, shop names or GPS are shown.</div>
-      <div class="mz-toolbar">
-        <input type="text" id="log-search" class="mz-search" placeholder="🔍  Search block, shop type, enumerator…" oninput="renderTable('log')">
-        <select id="log-outcome" class="mz-filter" onchange="renderTable('log')"></select>
-        <button class="mz-export" onclick="exportTableCSV('log')">⬇ Export CSV</button>
-        <span class="mz-count" id="log-count"></span>
-      </div>
-      <div class="mz-table-wrap"><div class="mz-scroll"><table class="mz-table" id="log-table"><thead></thead><tbody></tbody></table></div></div>
-    </div>
-    <p class="footnote">Completion % = completed ÷ block target. Blocks with no primary-sample target (replacement shops only) show “—”. The interview log reflects the survey, location, enumerator, date and profile filters currently selected.</p>
+    <p class="footnote">Main sample = shops flagged as the primary sample in the sampling frame. Replacement = backup shops used when a main shop refuses, is closed or its manager is unavailable. Completion % = total completed ÷ block target; blocks with no main-sample shops show “—”. The survey, location and date filters apply.</p>
   </div>
 
 </div><!-- /main -->
@@ -680,7 +669,7 @@ const ENC = __PAYLOAD__;
 
 const $ = id => document.getElementById(id);
 let DB = null;                                   // decrypted payload {meta, records, lists}
-const BLANK = { survey:1, block:'all', shop:'all', edu:'all', age:'all', en:'all', from:'', to:'' };
+const BLANK = { survey:1, block:'all', shop:'all', edu:'all', age:'all', from:'', to:'' };
 let STATE = Object.assign({}, BLANK);
 
 // ============================================================
@@ -1055,11 +1044,11 @@ const expBand = v => bandOf(v, EXP_BANDS_E, EXP_BANDS_L);
 // ============================================================
 const PRED = {
   prog:  (r,s=STATE) => r.s===s.survey && (s.block==='all' || r.blk===s.block),
-  field: (r,s=STATE) => PRED.prog(r,s) && (s.en==='all' || r.en===s.en) && (!s.from || r.d>=s.from) && (!s.to || r.d<=s.to),
+  field: (r,s=STATE) => PRED.prog(r,s) && (!s.from || r.d>=s.from) && (!s.to || r.d<=s.to),
   full:  (r,s=STATE) => PRED.field(r,s) && (s.shop==='all' || r.st===s.shop) && (s.edu==='all' || r.ed===s.edu) && (s.age==='all' || r.ag===s.age)
 };
 const profileActive = () => STATE.shop!=='all' || STATE.edu!=='all' || STATE.age!=='all';
-const filtersActive = () => ['block','shop','edu','age','en'].some(k=>STATE[k]!=='all') || STATE.from || STATE.to;
+const filtersActive = () => ['block','shop','edu','age'].some(k=>STATE[k]!=='all') || STATE.from || STATE.to;
 const FLD  = () => DB.records.filter(r=>PRED.field(r));
 const DONE = () => DB.records.filter(r=>PRED.full(r) && r.cm);
 const SURVEY = () => DB.meta.surveys[STATE.survey];
@@ -1082,11 +1071,10 @@ function buildFilterOptions(){
   fillSelect('flt-shop','shop types', uniq('st').sort());
   fillSelect('flt-edu','education levels', listLabels('educ4').filter(l=>uniq('ed').includes(l)));
   fillSelect('flt-age','age groups', ['18–24','25–34','35–44','45–54','55+'].filter(l=>uniq('ag').includes(l)));
-  fillSelect('flt-en','enumerators', uniq('en').sort());
   const ds = rs.map(r=>r.d).sort();
   ['flt-from','flt-to'].forEach(id=>{ $(id).min = ds[0]||''; $(id).max = ds[ds.length-1]||''; });
   $('flt-from').value = STATE.from; $('flt-to').value = STATE.to;
-  const lbl = {block:'f-block', shop:'f-shop', edu:'f-edu', age:'f-age', en:'f-en'};
+  const lbl = {block:'f-block', shop:'f-shop', edu:'f-edu', age:'f-age'};
   Object.keys(lbl).forEach(k => $(lbl[k]).classList.toggle('on', STATE[k]!=='all'));
   $('f-from').classList.toggle('on', !!STATE.from); $('f-to').classList.toggle('on', !!STATE.to);
 }
@@ -1104,7 +1092,7 @@ function onFilter(k, v){ STATE[k] = v; buildFilterOptions(); refresh(); }
 function resetFilters(){ STATE = Object.assign({}, BLANK, {survey:STATE.survey}); buildFilterOptions(); refresh(); }
 function toggleFilters(){ $('filters').classList.toggle('open'); }
 
-const FILTER_NAMES = {block:'Block', shop:'Shop type', edu:'Education', age:'Age group', en:'Enumerator', from:'From', to:'To'};
+const FILTER_NAMES = {block:'Block', shop:'Shop type', edu:'Education', age:'Age group', from:'From', to:'To'};
 function renderSampleNote(){
   const chips = Object.keys(FILTER_NAMES).filter(k => STATE[k] && STATE[k]!=='all')
     .map(k=>`<button class="chip" onclick="onFilter('${k}', '${k==='from'||k==='to'?'':'all'}')" title="Remove this filter">${FILTER_NAMES[k]}: ${STATE[k]} <span>✕</span></button>`).join('');
@@ -1171,8 +1159,6 @@ async function boot(){
   $('footer-kind').textContent = m.is_dummy ? 'Dummy data — figures are illustrative' : 'Confidential — for client use only';
   $('footer-updated').textContent = 'Built ' + m.generated;
   $('survey-seg').querySelectorAll('button').forEach(b=>{ b.textContent = m.surveys[b.dataset.s].label; });
-  const lo = $('log-outcome');
-  lo.innerHTML = '<option value="all">All outcomes</option>' + listLabels('status_survey').map(l=>`<option>${l}</option>`).join('');
   syncSurveyUI(); buildFilterOptions(); initTables();
   renderSampleNote(); updateHeaderMeta();
   drawPanel('overview');
@@ -1366,7 +1352,7 @@ function drawMod1(){
   const d = DONE();
   const u1 = d.filter(r=>r.un1!=null), u2 = d.filter(r=>r.un2!=null), cc = d.filter(r=>r.calc!=null);
   const full1 = share(u1.filter(r=>r.un1===2).length, u1.length), full2 = share(u2.filter(r=>r.un2===2).length, u2.length);
-  const FR = {1:'Percentage (“Inflation is 6%”)', 2:'Rupee example (“Rs 100 → Rs 106”)', 3:'Both equally easy'};
+  const FR = {1:'Percentage (“Inflation is 6%”)', 2:'Rupee example (“Rs 100 becomes Rs 106”)', 3:'Both equally easy'};
   const framing = tally(d, r=>r.fr!=null ? FR[r.fr] : null, Object.values(FR));
   $('m1-kpis').innerHTML =
     kpi('🧠', full1==null ? '—' : full1+'%', 'Fully Understand “Inflation”', 'Before the definition was read', 'neutral', 'teal') +
@@ -1376,10 +1362,14 @@ function drawMod1(){
   donutChart('chartUn1', tally(u1, r=>listLabel('understand3', r.un1), listLabels('understand3')), [S(2), S(8), S(6)]);
   donutChart('chartUn2', tally(u2, r=>listLabel('understand3', r.un2), listLabels('understand3')), [S(2), S(8), S(6)]);
   donutChart('chartCalc', tally(cc, r=>r.calc ? 'Correct (103)' : 'Incorrect', ['Correct (103)','Incorrect']), [S(6), S(2)]);
-  barChart('chartFraming', framing, S(5), true);
+  donutChart('chartFraming', framing, [S(5), S(3), S(8)]);
 
   const col = (k,i) => d.map(r=> r[k] ? pv(r[k][i]) : null);
   const preM = MARGIN_LABELS.map((_,i)=>r1(mean(col('c',i)))), postM = MARGIN_LABELS.map((_,i)=>r1(mean(col('e',i))));
+  const pm = preM[0], qm = postM[0], sg = v => v==null ? 'n/a' : (v>0?'+':'')+v+'%';
+  $('decRead').innerHTML = '<b>How to read this:</b> each bar is the average % change managers plan to make in the next 3 months. <b>+5%</b> = they plan to raise it by 5%; <b>−5%</b> = they plan to cut it by 5%; <b>0</b> = no change. ' +
+    'Pink bars are plans <b>before</b> hearing the forecast; blue bars are plans <b>after</b> being told inflation will be 8.4%. ' +
+    (pm!=null && qm!=null ? `<br>Example: planned price change moved from <b>${sg(pm)}</b> to <b>${sg(qm)}</b> after the information.` : '');
   groupedBar('chartDecMean', MARGIN_LABELS, [{name:'Before information', data:preM, color:S(7)}, {name:'After information', data:postM, color:S(3)}], '%', true);
   const dirOf = v => v==null ? null : v<0 ? 'Decrease' : v>0 ? 'Increase' : 'No change';
   const SER = ['Decrease','No change','Increase'], COL = [S(2), MUTED(), S(6)];
@@ -1393,7 +1383,7 @@ function drawMod1(){
 // ============================================================
 //  PANEL: PB2 — COMMUNICATION NETWORK
 // ============================================================
-const SRC_LABELS = ['Operating costs (inputs, wages, rent, energy)','Official domestic sources (SBP)','Official international sources (e.g. IMF)','Conversations with other firms','Social (media, family, friends)'];
+const SRC_LABELS = ['Own business costs','Official sources in Pakistan (SBP)','International sources (e.g. IMF)','Talking to other firms','Family, friends & social media'];
 const FREQ_TOPICS = ['Anything','Prices of your product','Business expenses','Inflation in general'];
 const MQ_LABELS = ['Discussion started about prices / costs','Already knew the inflation forecast','Exact inflation numbers discussed','Sought their advice on inflation','Checked official statistics afterwards','Adjusted business decisions afterwards','Prompted talks with other firms'];
 function drawMod2(){
@@ -1406,7 +1396,7 @@ function drawMod2(){
     kpi('🗣️', fx(mean(nf.map(r=>r.nf))), 'Avg Firms Spoken To', 'Over the past 3 months', 'navy', 'navy') +
     kpi('🤝', (share(nf.filter(r=>r.nf>0).length, nf.length) ?? '—') + (nf.length?'%':''), 'Talked With ≥1 Other Firm', 'About inflation', 'up', 'green') +
     kpi('💡', (share(mem.filter(r=>r.mem===1).length, mem.length) ?? '—') + (mem.length?'%':''), 'Recall a Memorable Conversation', 'That affected expectations', 'neutral', 'amber') +
-    kpi('⭐', topSrc ? topSrc.value+' / 10' : '—', 'Top-Rated Information Source', topSrc ? topSrc.label.split('(')[0].trim() : '—', 'neutral', 'purple') +
+    kpi('⭐', topSrc ? topSrc.value+' / 10' : '—', 'Top-Rated Information Source', topSrc ? topSrc.label : '—', 'neutral', 'purple') +
     kpi('📆', (share(weekly.length, d.filter(r=>r.fq).length) ?? '—') + (d.some(r=>r.fq)?'%':''), 'Talk at Least Weekly', 'On any topic', 'neutral', 'teal');
 
   barChart('chartSrc', srcMeans, S(1), true);
@@ -1445,33 +1435,24 @@ function outcomeBadge(r){
 function blockRows(){
   const sm = SURVEY(), fl = FLD(), names = new Set([...Object.keys(sm.frame_blocks), ...fl.map(r=>r.blk)]);
   return [...names].filter(b=>STATE.block==='all' || b===STATE.block).map(b=>{
-    const target = sm.blocks[b] || 0, vis = fl.filter(r=>r.blk===b), done = vis.filter(r=>r.cm).length;
-    const pct = target ? Math.round(100*done/target) : 0;
-    return { block:b, target, visits:vis.length, done, pct, status: target && done>=target ? 'Completed' : done ? 'In Progress' : 'Not Started' };
+    const target = sm.blocks[b] || 0, vis = fl.filter(r=>r.blk===b);
+    const mainDone = vis.filter(r=>r.rl===1 && r.cm).length, mainNot = vis.filter(r=>r.rl===1 && !r.cm).length;
+    const replDone = vis.filter(r=>r.rl!==1 && r.cm).length, replNot = vis.filter(r=>r.rl!==1 && !r.cm).length;
+    const done = mainDone + replDone, pct = target ? Math.round(100*done/target) : 0;
+    return { block:b, target, mainDone, mainNot, replDone, replNot, done, pct, status: target && done>=target ? 'Completed' : done ? 'In Progress' : 'Not Started' };
   });
-}
-function logRows(){
-  const rs = (profileActive() ? DB.records.filter(r=>PRED.full(r)) : FLD());
-  return rs.map(r=>({ date:r.d, block:r.blk, shop:r.st||'—', en:r.en, outcome:r.ou, oc:r.oc, ou:r.ou, edu:r.ed||'—', age:r.ag||'—',
-                      infl:ev(r.e1), dur:r.dur, raw:r })).sort((a,b)=>b.date.localeCompare(a.date));
 }
 const TBL = {};
 function initTables(){
-  TBL.blk = { rows:blockRows, thead:'blk-table', body:'blk-table', search:'blk-search', filter:r=>{ const f=$('blk-status').value; return f==='all' || r.status===f; },
+  TBL.blk = { rows:blockRows, search:'blk-search', filter:r=>{ const f=$('blk-status').value; return f==='all' || r.status===f; },
     sort:{k:'block', dir:1}, count:'blk-count', file:'block_tracker',
-    cols:[{k:'block',l:'Block',str:1},{k:'target',l:'Target',num:1},{k:'visits',l:'Visits',num:1},{k:'done',l:'Completed',num:1},{k:'pct',l:'Completion'},{k:'status',l:'Status',str:1}],
+    cols:[{k:'block',l:'Block',str:1},{k:'target',l:'Target (main shops)',num:1},{k:'mainDone',l:'Main: completed',num:1},{k:'mainNot',l:'Main: not interviewed',num:1},
+          {k:'replDone',l:'Replacement: completed',num:1},{k:'done',l:'Total completed',num:1},{k:'pct',l:'Completion'},{k:'status',l:'Status',str:1}],
     cell:(r,c)=> c.k==='block' ? `<span class="mz-mauza">${r.block}</span>` : c.k==='target' ? (r.target||'—') :
       c.k==='pct' ? (r.target ? `<span class="mz-bar"><span style="width:${Math.min(r.pct,100)}%;background:${barColor(r.pct)}"></span></span><span class="mz-pct" style="color:${barColor(r.pct)}">${r.pct}%</span>` : '—') :
       c.k==='status' ? statusBadge(r.status) : `<span class="mz-frac"><span class="done">${r[c.k]}</span></span>`,
-    csv:r=>[r.block,r.target,r.visits,r.done,r.target?r.pct:'',r.status] };
-  TBL.log = { rows:logRows, search:'log-search', filter:r=>{ const f=$('log-outcome').value; return f==='all' || r.outcome===f; },
-    sort:{k:'date', dir:-1}, count:'log-count', file:'interview_log', cap:600,
-    cols:[{k:'date',l:'Date',str:1},{k:'block',l:'Block',str:1},{k:'shop',l:'Shop type',str:1},{k:'en',l:'Enumerator',str:1},{k:'outcome',l:'Outcome',str:1},
-          {k:'edu',l:'Education',str:1},{k:'age',l:'Age group',str:1},{k:'infl',l:'Expected inflation (%)',num:1},{k:'dur',l:'Duration (min)',num:1}],
-    cell:(r,c)=> c.k==='date' ? fmtD(r.date)+' '+r.date.slice(0,4) : c.k==='outcome' ? outcomeBadge(r.raw) : c.k==='infl' ? (r.infl==null?'—':r.infl) : c.k==='dur' ? (r.dur==null?'—':r.dur) :
-      c.k==='block' ? `<span class="mz-mauza">${r.block}</span>` : r[c.k],
-    csv:r=>[r.date,r.block,r.shop,r.en,r.outcome,r.edu,r.age,r.infl??'',r.dur??''] };
-  ['blk','log'].forEach(key=>{
+    csv:r=>[r.block,r.target,r.mainDone,r.mainNot,r.replDone,r.done,r.target?r.pct:'',r.status] };
+  ['blk'].forEach(key=>{
     const t = TBL[key], tbl = $(key+'-table');
     tbl.querySelector('thead').innerHTML = '<tr>' + t.cols.map(c=>`<th class="${c.num?'num':''}" data-k="${c.k}">${c.l} <span class="arrow"></span></th>`).join('') + '</tr>';
     tbl.querySelectorAll('th').forEach(th=>{
@@ -1498,28 +1479,32 @@ function renderTable(key){
   $(t.count).textContent = rows.length.toLocaleString() + ' rows' + (t.cap && rows.length>t.cap ? ` (first ${t.cap} shown)` : '');
 }
 function drawTrk(){
-  const sm = SURVEY(), fl = FLD(), T = targetNow();
-  const done = fl.filter(r=>r.cm).length, bl = blockRows();
+  const sm = SURVEY(), fl = FLD(), T = targetNow(), bl = blockRows();
+  const mainDone = fl.filter(r=>r.rl===1 && r.cm).length, replDone = fl.filter(r=>r.rl!==1 && r.cm).length;
+  const mainNot = fl.filter(r=>r.rl===1 && !r.cm).length;
   $('tk-kpis').innerHTML =
-    kpi('🎯', T.toLocaleString(), 'Sample Target', Object.keys(sm.blocks).length+' blocks with primary shops', 'navy', 'navy') +
-    kpi('✅', done.toLocaleString(), 'Total Completed', T ? pctOf(done,T)+'% of target' : '—', 'up', 'green') +
-    kpi('🏘️', bl.filter(b=>b.done>0).length+' / '+bl.length, 'Blocks Started', 'At least one completed interview', 'neutral', 'teal') +
-    kpi('🏁', bl.filter(b=>b.status==='Completed').length+' / '+bl.filter(b=>b.target>0).length, 'Blocks at Target', 'Completed ≥ block target', 'up', 'amber');
+    kpi('🎯', T.toLocaleString(), 'Sample Target', 'Main-sample shops to interview', 'navy', 'navy') +
+    kpi('✅', mainDone.toLocaleString(), 'Completed: Main Sample', T ? pctOf(mainDone,T)+'% of target' : '—', 'up', 'green') +
+    kpi('🔁', replDone.toLocaleString(), 'Completed: Replacement Shops', 'Used in place of a main shop · '+sm.repl_n.toLocaleString()+' available', 'neutral', 'teal') +
+    kpi('🚫', mainNot.toLocaleString(), 'Main Shops Not Interviewed', 'Refused, closed or unavailable — replaced', 'neutral', 'amber');
   $('tk-cards').innerHTML = [1,2].map(s=>{
     const st = surveyStatsField(s), pct = st.target ? Math.round(100*st.done/st.target) : 0, c = barColor(pct);
     return `<div class="land-card"><div class="lc-bin">${DB.meta.surveys[s].label}</div>
       <div class="lc-frac">${st.done.toLocaleString()} <span class="lc-tgt">/ ${st.target.toLocaleString()}</span></div>
       <div class="lc-track"><span style="width:${Math.min(pct,100)}%;background:${c}"></span></div>
+      <div style="font-size:12px;color:var(--text-2);margin:8px 0 2px">Main sample: <b>${st.main}</b> · Replacement: <b>${st.repl}</b></div>
       <div class="lc-foot"><span class="lc-pct" style="color:${c}">${pct}%</span>${statusBadge(st.done>=st.target&&st.target ? 'Completed' : st.done ? 'In Progress' : 'Not Started')}</div></div>`;
   }).join('');
-  const grp = r => r.oc===1 ? 'Completed' : r.oc===2 ? 'Partial' : [3,4,5,6].includes(r.oc) ? 'Refused' : 'Not reached';
-  const en = [...new Set(fl.map(r=>r.en))].sort();
-  stackedCountChart('chartEnums', en, stackCount(fl, r=>r.en, grp, en, ['Completed','Partial','Refused','Not reached'], [S(6), S(8), S(2), MUTED()]));
-  renderTable('blk'); renderTable('log');
+  const grp = r => (r.rl===1 ? 'Main' : 'Replacement') + (r.cm ? ' – completed' : ' – not interviewed');
+  const GR = ['Main – completed','Main – not interviewed','Replacement – completed','Replacement – not interviewed'];
+  const cats = bl.filter(b=>b.mainDone+b.mainNot+b.replDone+b.replNot>0).map(b=>b.block).sort();
+  stackedCountChart('chartRole', cats, stackCount(fl, r=>r.blk, grp, cats, GR, [S(6), S(2), S(3), MUTED()]));
+  renderTable('blk');
 }
 function surveyStatsField(s){
   const st = Object.assign({}, STATE, {survey:s});
-  return { done:DB.records.filter(r=>PRED.field(r,st) && r.cm).length,
+  const dn = DB.records.filter(r=>PRED.field(r,st) && r.cm);
+  return { done:dn.length, main:dn.filter(r=>r.rl===1).length, repl:dn.filter(r=>r.rl!==1).length,
            target: st.block==='all' ? DB.meta.surveys[s].target : (DB.meta.surveys[s].blocks[st.block]||0) };
 }
 
@@ -1551,10 +1536,8 @@ async function exportExcel(){
       ['Mean expected inflation, 12 m (%)', r1(mean(e))],['Median expected inflation, 12 m (%)', r1(median(e))],['Median interview length (min)', r1(median(done.map(r=>r.dur)))],
       ['Mean manager age (years)', r1(mean(done.map(r=>r.age)))],['Mean employees per shop', r1(mean(done.map(r=>r.emp)))]];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Summary');
-    ['blk','log'].forEach(key=>{
-      const t = TBL[key], rows = tableData(key);
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([t.cols.map(c=>c.l), ...rows.map(t.csv)]), key==='blk' ? 'Block Tracker' : 'Interview Log');
-    });
+    const t = TBL.blk;
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([t.cols.map(c=>c.l), ...tableData('blk').map(t.csv)]), 'Block Tracker');
     XLSX.writeFile(wb, `inflation_${sm.label.replace(/\s+/g,'')}_${stamp()}.xlsx`);
   }catch(err){ alert('Excel export failed: ' + err.message + '. You can still use the CSV export buttons.'); }
   showLoading(false);
