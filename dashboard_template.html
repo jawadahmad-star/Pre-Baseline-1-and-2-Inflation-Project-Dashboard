@@ -339,7 +339,16 @@
       .page-footer { margin-top:10px; }
       .only-1, .only-2 { display:none; }
       body[data-sv="1"] .only-1, body[data-sv="2"] .only-2 { display:block; }
-      
+      * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      @page { size:A4 landscape; margin:10mm; }
+      body { background:#fff; }
+      .panel { page-break-before:always; }
+      #panel-overview { page-break-before:avoid; }
+      .print-img { display:block; width:100%; height:100%; object-fit:contain; }
+      .chart-wrap { overflow:visible; }
+      .print-head-title { display:flex; align-items:center; justify-content:space-between; background:#1E2438; color:#fff; padding:12px 18px; border-radius:10px; border-bottom:4px solid #E8192C; margin-bottom:10px; }
+      .print-head-title b { font-family:'Playfair Display',serif; font-size:20px; }
+      .print-head-title span { font-size:11px; opacity:.85; }
     }
 
   </style>
@@ -1105,7 +1114,7 @@ function renderSampleNote(){
   $('sample-note').innerHTML =
     `<span><strong>${n.toLocaleString()}</strong> completed interviews shown · <strong>${att.toLocaleString()}</strong> shop visits</span>${warn}` +
     (chips ? `<span class="chips">${chips}</span>` : '');
-  $('print-head').innerHTML = `<strong>${SURVEY().label}</strong> · ${n} completed interviews · ` +
+  $('print-head').innerHTML = `<div class="print-head-title"><b>Inflation Project</b><span>Research Solutions · Pre-Baseline Surveys · Allama Iqbal Town, Lahore</span></div><strong>${SURVEY().label}</strong> · ${n} completed interviews · ` +
     (filtersActive() ? 'Filters: ' + Object.keys(FILTER_NAMES).filter(k=>STATE[k]&&STATE[k]!=='all').map(k=>FILTER_NAMES[k]+' = '+STATE[k]).join('; ') : 'No filters applied') +
     ` · ${DB.meta.is_dummy ? 'DUMMY DATA' : 'Data as of '+DB.meta.generated}`;
   const total = DB.records.filter(r=>r.s===STATE.survey).length;
@@ -1549,20 +1558,33 @@ async function exportExcel(){
 /* PDF = the browser's print dialog ("Save as PDF").  All panels are drawn first so the report is complete. */
 function exportPDF(){
   showLoading(true, 'Preparing report…');
-  const keep = activePanelId();
   document.body.classList.add('print-all');
   document.querySelectorAll('.panel').forEach(p=>p.style.display='block');
+  const prevAnim = Chart.defaults.animation;
+  Chart.defaults.animation = false;                 // draw instantly so nothing is half-rendered when printed
   destroyAllCharts(); drawn.clear();
   Object.keys(PANEL_DRAW).forEach(id=>{ if((id==='mod1'&&STATE.survey!==1)||(id==='mod2'&&STATE.survey!==2)) return; drawPanel(id); });
-  setTimeout(()=>{
-    showLoading(false);
-    window.print();
+  const swapped = [];
+  const restore = () => {
+    swapped.forEach(([cv,img])=>{ img.remove(); cv.style.display=''; });
     document.body.classList.remove('print-all');
     document.querySelectorAll('.panel').forEach(p=>p.style.display='');
+    Chart.defaults.animation = prevAnim;
     redrawAll();
-  }, 900);
+    window.removeEventListener('afterprint', restore);
+  };
+  setTimeout(()=>{
+    // Browsers re-size canvases for print and can blank them, so print a still image of each chart instead.
+    document.querySelectorAll('canvas').forEach(cv=>{
+      if(!Chart.getChart(cv)) return;
+      const img = new Image(); img.className = 'print-img'; img.src = cv.toDataURL('image/png');
+      cv.style.display = 'none'; cv.parentNode.appendChild(img); swapped.push([cv,img]);
+    });
+    showLoading(false);
+    window.addEventListener('afterprint', restore);
+    window.print();
+  }, 500);
 }
-
 let __rz;
 window.addEventListener('resize', ()=>{
   clearTimeout(__rz);
