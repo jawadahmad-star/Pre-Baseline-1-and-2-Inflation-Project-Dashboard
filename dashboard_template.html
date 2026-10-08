@@ -339,7 +339,7 @@
       .page-footer { margin-top:10px; }
       .only-1, .only-2 { display:none; }
       body[data-sv="1"] .only-1, body[data-sv="2"] .only-2 { display:block; }
-      body[data-sv="1"] .nav-tab[data-sv="2"], body[data-sv="2"] .nav-tab[data-sv="1"] { display:none; }
+      
     }
 
   </style>
@@ -717,6 +717,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
 //  NAVIGATION
 // ============================================================
 function showPanel(id, btn) {
+  // Survey-specific tabs always open on their own survey (Understanding = PB1, Communication = PB2).
+  const need = id==='mod1' ? 1 : id==='mod2' ? 2 : null;
+  if(need && STATE.survey!==need){
+    STATE = Object.assign({}, BLANK, {survey:need});
+    syncSurveyUI(); buildFilterOptions(); renderSampleNote(); updateHeaderMeta(); drawn.clear();
+  }
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   $('panel-' + id).classList.add('active');
@@ -1086,7 +1092,6 @@ function setSurvey(n){
 function syncSurveyUI(){
   document.body.dataset.sv = String(STATE.survey);
   $('survey-seg').querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.s==String(STATE.survey)));
-  document.querySelectorAll('.nav-tab[data-sv]').forEach(b=>{ b.style.display = b.dataset.sv==String(STATE.survey) ? '' : 'none'; });
 }
 function onFilter(k, v){ STATE[k] = v; buildFilterOptions(); refresh(); }
 function resetFilters(){ STATE = Object.assign({}, BLANK, {survey:STATE.survey}); buildFilterOptions(); refresh(); }
