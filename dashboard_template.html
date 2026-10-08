@@ -477,7 +477,7 @@
     <div class="chart-grid cols-2">
       <div class="chart-card full">
         <h3>Daily Completed Interviews</h3>
-        <div class="chart-desc">Number of interviews completed on each field day</div>
+        <div class="chart-desc">Interviews completed each field day, as a % of the sample target</div>
         <div class="chart-wrap"><canvas id="chartDaily"></canvas></div>
       </div>
     </div>
@@ -501,7 +501,7 @@
     <div class="chart-grid">
       <div class="chart-card full">
         <h3>Completed Interviews by Block</h3>
-        <div class="chart-desc">Completed (solid) against the remaining block target (shaded), labelled as completed / target with completion rate</div>
+        <div class="chart-desc">Completed (solid) against the remaining block target (shaded), labelled with the completion rate (% of the block target)</div>
         <div class="chart-wrap auto"><canvas id="chartBlock"></canvas></div>
       </div>
     </div>
@@ -527,7 +527,7 @@
     <div class="chart-grid cols-3">
       <div class="chart-card"><h3>Shop Type</h3><div class="chart-desc">Share of completed interviews</div><div class="chart-wrap"><canvas id="chartPfShop"></canvas></div></div>
       <div class="chart-card"><h3>Manager Education</h3><div class="chart-desc">Highest level completed</div><div class="chart-wrap"><canvas id="chartPfEdu"></canvas></div></div>
-      <div class="chart-card"><h3>Manager Age Group</h3><div class="chart-desc">Number of managers per age band</div><div class="chart-wrap"><canvas id="chartPfAge"></canvas></div></div>
+      <div class="chart-card"><h3>Manager Age Group</h3><div class="chart-desc">Share of managers in each age band</div><div class="chart-wrap"><canvas id="chartPfAge"></canvas></div></div>
     </div>
     <div class="chart-grid cols-2">
       <div class="chart-card"><h3>Education by Shop Type</h3><div class="chart-desc">Stacked: share of managers at each education level within each shop type</div><div class="chart-wrap tall"><canvas id="chartPfEduShop"></canvas></div></div>
@@ -553,7 +553,7 @@
     </div>
     <div class="kpi-grid" id="ex-kpis"></div>
     <div class="chart-grid cols-2">
-      <div class="chart-card"><h3>Distribution of Expected Inflation</h3><div class="chart-desc">Number of managers by expected 12-month inflation band</div><div class="chart-wrap tall"><canvas id="chartExDist"></canvas></div></div>
+      <div class="chart-card"><h3>Distribution of Expected Inflation</h3><div class="chart-desc">Share of managers by expected 12-month inflation band</div><div class="chart-wrap tall"><canvas id="chartExDist"></canvas></div></div>
       <div class="chart-card"><h3>Expectation Bands by Education</h3><div class="chart-desc">Stacked: share of managers in each expectation band, within each education level</div><div class="chart-wrap tall"><canvas id="chartExBandEdu"></canvas></div></div>
     </div>
     <div class="chart-grid cols-3">
@@ -608,7 +608,7 @@
     <div class="kpi-grid" id="m2-kpis"></div>
     <div class="chart-grid cols-2">
       <div class="chart-card"><h3>Importance of Information Sources</h3><div class="chart-desc">How much managers rely on each source to form inflation expectations: average score from 0 (not relevant) to 10 (very important)</div><div class="chart-wrap tall"><canvas id="chartSrc"></canvas></div></div>
-      <div class="chart-card"><h3>Other Firms Spoken To (3 months)</h3><div class="chart-desc">Number of managers by count of firms they discussed inflation with</div><div class="chart-wrap tall"><canvas id="chartNF"></canvas></div></div>
+      <div class="chart-card"><h3>Other Firms Spoken To (3 months)</h3><div class="chart-desc">Share of managers by number of firms they discussed inflation with</div><div class="chart-wrap tall"><canvas id="chartNF"></canvas></div></div>
     </div>
     <div class="chart-grid cols-3">
       <div class="chart-card"><h3>How Far Away Are These Firms?</h3><div class="chart-desc">Among managers who spoke with at least one firm</div><div class="chart-wrap"><canvas id="chartDist"></canvas></div></div>
@@ -646,7 +646,7 @@
     <div class="chart-grid" style="margin-top:28px">
       <div class="chart-card full">
         <h3>Main Sample vs Replacement Shops, by Block</h3>
-        <div class="chart-desc">Number of shop visits in each block: main-sample shops (completed / not interviewed) and replacement shops (completed / not interviewed)</div>
+        <div class="chart-desc">Share of shop visits in each block (n = visits): main-sample shops and replacement shops, completed or not interviewed</div>
         <div class="chart-wrap auto"><canvas id="chartRole"></canvas></div>
       </div>
     </div>
@@ -902,8 +902,8 @@ function progressBars(id, rows){
   fitHeight(id, rows.length, 34, 60);
   mk(id,{type:'bar',
     data:{labels:rows.map(c=>c.label), datasets:[
-      {label:'Completed', data:rows.map(c=>c.done), backgroundColor:S(1), borderRadius:{topLeft:0,bottomLeft:0,topRight:4,bottomRight:4}, maxBarThickness:22, stack:'s'},
-      {label:'Remaining', data:rows.map(c=>Math.max(c.target-c.done,0)), backgroundColor:MUTED(), borderRadius:4, maxBarThickness:22, stack:'s'}
+      {label:'Completed', data:rows.map(c=>c.target ? pctOf(c.done,c.target) : 0), backgroundColor:S(1), borderRadius:{topLeft:0,bottomLeft:0,topRight:4,bottomRight:4}, maxBarThickness:22, stack:'s'},
+      {label:'Remaining', data:rows.map(c=>c.target ? Math.max(100-pctOf(c.done,c.target),0) : 0), backgroundColor:MUTED(), borderRadius:4, maxBarThickness:22, stack:'s'}
     ]},
     options:baseOpts({ indexAxis:'y',
       layout:{padding:{top:2, right:104}},
@@ -911,10 +911,10 @@ function progressBars(id, rows){
         legend:{position:'top', align:'end', labels:{font:FONT, color:TXT(), boxWidth:12, padding:12}},
         datalabels:{ display:ctx=>ctx.datasetIndex===1, anchor:'end', align:'right', clamp:true, clip:false,
           color:TXT(), font:{family:'Inter',size:11,weight:'700'},
-          formatter:(v,ctx)=>{ const c=rows[ctx.dataIndex]; return c.target ? c.done+' / '+c.target+'  ·  '+pctOf(c.done,c.target)+'%' : c.done+' done'; }},
+          formatter:(v,ctx)=>{ const c=rows[ctx.dataIndex]; return c.target ? pctOf(c.done,c.target)+'%' : '—'; }},
         tooltip:{callbacks:{label:ctx=>{ const c=rows[ctx.dataIndex];
-          return ctx.datasetIndex===0 ? ' Completed: '+c.done : ' Remaining: '+Math.max(c.target-c.done,0)+' of '+c.target; }}}},
-      scales:{ x:{stacked:true, beginAtZero:true, grace:'2%', ticks:{font:{family:'Inter',size:11},color:TXT()}, grid:{color:GRID()}, border:{display:false}},
+          return c.target ? (ctx.datasetIndex===0 ? ' Completed: '+pctOf(c.done,c.target)+'% of block target' : ' Remaining: '+Math.max(100-pctOf(c.done,c.target),0)+'%') : ' No main-sample target in this block'; }}}},
+      scales:{ x:{stacked:true, beginAtZero:true, grace:'2%', ticks:{font:{family:'Inter',size:11},color:TXT(),callback:v=>v+'%'}, grid:{color:GRID()}, border:{display:false}},
                y:{stacked:true, ticks:{font:{family:'Inter',size:11.5,weight:'600'},color:TXT(),autoSkip:false,maxRotation:0,minRotation:0}, grid:{display:false}, border:{display:false}}}})});
 }
 
@@ -929,20 +929,22 @@ function donutChart(id, arr, colors){
           formatter:(v,c)=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);const p=t?Math.round(100*v/t):0;return p>=6? p+'%':'';}} } }) });
 }
 
-function lineChart(id, arr){
+function lineChart(id, arr, target){
   if(!has(id, arr.map(x=>({value:x.count})))) return;
-  const vals = arr.map(x=>x.count);
+  const tot = arr.reduce((t,x)=>t+x.count,0), base = target || tot;     // % of target (or of all completes if no target)
+  const vals = arr.map(x=>base ? Math.round(1000*x.count/base)/10 : 0);
     mk(id,{type:'line',
     data:{labels:arr.map(x=>fmtD(x.date)), datasets:[
-      {label:'Completed', data:vals, borderColor:S(2), backgroundColor:'rgba(232,25,44,.10)', fill:true, tension:.3,
+      {label:target ? 'Completed (% of target)' : 'Completed (% of total)', data:vals, borderColor:S(2), backgroundColor:'rgba(232,25,44,.10)', fill:true, tension:.3,
        pointBackgroundColor:S(2), pointRadius:4, pointHoverRadius:6, borderWidth:2.5}
     ]},
     options:baseOpts({
       layout:{padding:{top:22}},
       plugins:{legend:{display:false},
-        datalabels:{display:true,anchor:'end',align:'top',color:TXT(),font:{family:'Inter',size:10.5,weight:'700'}}},
+        tooltip:{callbacks:{label:c=>' '+c.raw+'%'}},
+        datalabels:{display:true,anchor:'end',align:'top',color:TXT(),font:{family:'Inter',size:10.5,weight:'700'},formatter:v=>v+'%'}},
       scales:{x:{ticks:{font:{family:'Inter',size:11},color:TXT()},grid:{display:false},border:{display:false}},
-              y:{beginAtZero:true,grace:'14%',ticks:{font:{family:'Inter',size:11},color:TXT(),precision:0},grid:{color:GRID()},border:{display:false}}}})});
+              y:{beginAtZero:true,grace:'14%',ticks:{font:{family:'Inter',size:11},color:TXT(),callback:v=>v+'%'},grid:{color:GRID()},border:{display:false}}}})});
 }
 
 function cumulativeChart(id, arr, target){
@@ -977,7 +979,7 @@ function progressDonut(id, done, target){
     options:baseOpts({cutout:'72%',
       plugins:{legend:{position:'bottom',labels:{font:FONT,color:TXT(),boxWidth:12}},
         datalabels:{display:false},
-        tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw.toLocaleString()}}}}),
+        tooltip:{callbacks:{label:c=>' '+c.label+': '+pctOf(c.raw,done+Math.max(target-done,0))+'%'}}}}),
     plugins:[{id:'center', afterDraw(c){
       const {ctx, chartArea} = c; if(!chartArea) return;
       ctx.save();
@@ -986,7 +988,7 @@ function progressDonut(id, done, target){
       ctx.fillStyle=CV('--text')||NAVY; ctx.font='800 26px Inter';
       ctx.fillText(pctOf(done,target)+'%', x, y-2);
       ctx.fillStyle=CV('--text-3')||'#94a3b8'; ctx.font='600 11px Inter';
-      ctx.fillText(done.toLocaleString()+' / '+target.toLocaleString(), x, y+18);
+      ctx.fillText('of target', x, y+18);
       ctx.restore();
     }}]});
 }
@@ -1045,6 +1047,11 @@ function tally(rs, fn, order){
   const keys = order ? [...order, ...[...m.keys()].filter(k=>!order.includes(k))]
                      : [...m.keys()].sort((a,b)=>m.get(b)-m.get(a));
   return keys.map(k=>({label:String(k), value:m.get(k)||0}));
+}
+/* Convert a tally to whole-number percentages of its own total (or of `base`, e.g. respondents for multiple-response questions). */
+function asPct(arr, base){
+  const b = base != null ? base : arr.reduce((t,x)=>t+x.value,0);
+  return arr.map(x=>({label:x.label, value: b ? Math.round(100*x.value/b) : 0}));
 }
 /* mean of valFn grouped by keyFn; labels carry n */
 function meanBy(rs, keyFn, valFn, order, minN){
@@ -1269,10 +1276,10 @@ function drawOverview(){
     callout('primary','🙅','Refused', refused+' managers declined ('+pctOf(refused,fl.length)+'% of visits).') +
     callout('navy','🚪','Not reached', nr+' visits ended with a closed shop, appointment, ineligible shop or absent manager.');
 
-  lineChart('chartDaily', dailyFilled(fl, done));
+  lineChart('chartDaily', dailyFilled(fl, done), T);
   progressDonut('chartProgress', prog, T);
   donutChart('chartShop', tally(done, r=>r.st), PALETTE());
-  barChart('chartStatus', tally(fl, r=>r.ou), S(2), true);
+  barChart('chartStatus', asPct(tally(fl, r=>r.ou)), S(2), true, '%');
 
   const blocks = new Map();
   Object.entries(sm.blocks).forEach(([b,t])=>blocks.set(b,{label:b, target:t, done:0}));
@@ -1325,15 +1332,15 @@ function drawProf(){
     kpi('🏪', fx(median(d.map(r=>r.fy))), 'Median Shop Age (years)', 'Years in operation', 'neutral', 'amber') +
     kpi('🧑‍💼', fx(median(d.map(r=>r.mt))), 'Median Manager Tenure (years)', 'At this shop', 'navy', 'purple');
   donutChart('chartPfShop', tally(d, r=>r.st), PALETTE());
-  barChart('chartPfEdu', tally(d, r=>r.ed, eduL), S(3), false);
-  barChart('chartPfAge', tally(d, r=>r.ag, AGE_ORDER), S(1), false);
+  barChart('chartPfEdu', asPct(tally(d, r=>r.ed, eduL)), S(3), false, '%');
+  barChart('chartPfAge', asPct(tally(d, r=>r.ag, AGE_ORDER)), S(1), false, '%');
   const shops = tally(d, r=>r.st).map(x=>x.label);
   const sp = stackPct(d, r=>r.st, r=>r.ed, shops, eduL, [S(8), S(4), S(3), S(1)]);
   stackedChart('chartPfEduShop', sp.cats, sp.series, true);
-  barChart('chartPfBlock', tally(d, r=>r.blk), S(5), true);
-  barChart('chartPfEmp', tally(d, r=>bandOf(r.emp,[1,3,6,11],['None','1–2','3–5','6–10','11+']), ['None','1–2','3–5','6–10','11+']), S(6), false);
-  barChart('chartPfFirmAge', tally(d, r=>bandOf(r.fy,[2,5,10,20],['<2 yrs','2–4','5–9','10–19','20+']), ['<2 yrs','2–4','5–9','10–19','20+']), S(4), false);
-  barChart('chartPfArea', tally(d, r=>bandOf(r.area,[20,50,100,200],['<20','20–49','50–99','100–199','200+']), ['<20','20–49','50–99','100–199','200+']), S(7), false);
+  barChart('chartPfBlock', asPct(tally(d, r=>r.blk)), S(5), true, '%');
+  barChart('chartPfEmp', asPct(tally(d, r=>bandOf(r.emp,[1,3,6,11],['None','1–2','3–5','6–10','11+']), ['None','1–2','3–5','6–10','11+'])), S(6), false, '%');
+  barChart('chartPfFirmAge', asPct(tally(d, r=>bandOf(r.fy,[2,5,10,20],['<2 yrs','2–4','5–9','10–19','20+']), ['<2 yrs','2–4','5–9','10–19','20+'])), S(4), false, '%');
+  barChart('chartPfArea', asPct(tally(d, r=>bandOf(r.area,[20,50,100,200],['<20','20–49','50–99','100–199','200+']), ['<20','20–49','50–99','100–199','200+'])), S(7), false, '%');
 }
 
 // ============================================================
@@ -1352,7 +1359,7 @@ function drawExp(){
            kpi('🧭', rev==null ? '—' : (rev>0?'+':'')+fx(rev,' pp'), 'Revision After Information', 'Most-likely vs initial forecast', rev!=null&&rev<0?'up':'neutral', 'purple')
          : kpi('📏', n ? fx(quant(e,.25))+'–'+fx(quant(e,.75))+'%' : '—', 'Middle 50% of Managers', 'Inter-quartile range', 'neutral', 'teal'));
 
-  barChart('chartExDist', tally(d.filter(r=>ev(r.e1)!=null), r=>expBand(ev(r.e1)), EXP_BANDS_L), S(2), false);
+  barChart('chartExDist', asPct(tally(d.filter(r=>ev(r.e1)!=null), r=>expBand(ev(r.e1)), EXP_BANDS_L)), S(2), false, '%');
   const sp = stackPct(d.filter(r=>ev(r.e1)!=null), r=>r.ed, r=>expBand(ev(r.e1)), EDU_ORDER(), EXP_BANDS_L, [S(6),S(3),S(1),S(5),S(8),S(4),S(2)]);
   stackedChart('chartExBandEdu', sp.cats, sp.series, true);
   barChart('chartExShop', meanBy(d, r=>r.st, r=>ev(r.e1)), S(1), true, '%');
@@ -1427,7 +1434,7 @@ function drawMod2(){
     kpi('📆', (share(weekly.length, d.filter(r=>r.fq).length) ?? '—') + (d.some(r=>r.fq)?'%':''), 'Talk at Least Weekly', 'On any topic', 'neutral', 'teal');
 
   barChart('chartSrc', srcMeans, S(1), true);
-  barChart('chartNF', tally(nf, r=>bandOf(r.nf,[1,2,3,5,8],['0','1','2','3–4','5–7','8+']), ['0','1','2','3–4','5–7','8+']), S(4), false);
+  barChart('chartNF', asPct(tally(nf, r=>bandOf(r.nf,[1,2,3,5,8],['0','1','2','3–4','5–7','8+']), ['0','1','2','3–4','5–7','8+'])), S(4), false, '%');
   donutChart('chartDist', tally(d.filter(r=>r.nf>0 && r.dcat!=null), r=>listLabel('dist_cat', r.dcat), listLabels('dist_cat')), PALETTE());
   donutChart('chartMem', tally(mem, r=>r.mem===1 ? 'Yes' : 'No', ['Yes','No']), [S(6), MUTED()]);
   donutChart('chartSoc', tally(d.filter(r=>r.mem===1 && r.soc!=null), r=>listLabel('soc_rel', r.soc), listLabels('soc_rel')), [S(3), S(4), MUTED()]);
@@ -1441,9 +1448,9 @@ function drawMod2(){
   const sq = stackPct(rowsQ, x=>x.q, x=>x.v, MQ_LABELS, YM.map(y=>y[0]), YM.map(y=>y[2]));
   stackedChart('chartMq', sq.cats, sq.series, true);
 
-  barChart('chartRel', tally(d.filter(r=>r.mem===1), r=>(r.rel||[]).map(c=>listLabel('bus_rel', c)), []), S(3), true);
-  barChart('chartKnown', tally(d.filter(r=>r.mem===1 && r.kn!=null), r=>listLabel('known_dur', r.kn), listLabels('known_dur')), S(5), true);
-  barChart('chartAttr', tally(d, r=>(r.attr||[]).map(c=>listLabel('key_attr', c))), S(7), true);
+  barChart('chartRel', asPct(tally(d.filter(r=>r.mem===1), r=>(r.rel||[]).map(c=>listLabel('bus_rel', c)), []), d.filter(r=>r.mem===1).length), S(3), true, '%');
+  barChart('chartKnown', asPct(tally(d.filter(r=>r.mem===1 && r.kn!=null), r=>listLabel('known_dur', r.kn), listLabels('known_dur'))), S(5), true, '%');
+  barChart('chartAttr', asPct(tally(d, r=>(r.attr||[]).map(c=>listLabel('key_attr', c))), d.length), S(7), true, '%');
 }
 
 // ============================================================
@@ -1525,7 +1532,8 @@ function drawTrk(){
   const grp = r => (r.rl===1 ? 'Main' : 'Replacement') + (r.cm ? ' – completed' : ' – not interviewed');
   const GR = ['Main – completed','Main – not interviewed','Replacement – completed','Replacement – not interviewed'];
   const cats = bl.filter(b=>b.mainDone+b.mainNot+b.replDone+b.replNot>0).map(b=>b.block).sort();
-  stackedCountChart('chartRole', cats, stackCount(fl, r=>r.blk, grp, cats, GR, [S(6), S(2), S(3), MUTED()]));
+  const spr = stackPct(fl, r=>r.blk, grp, cats, GR, [S(6), S(2), S(3), MUTED()]);
+  stackedChart('chartRole', spr.cats, spr.series, true);
   renderTable('blk');
 }
 function surveyStatsField(s){
