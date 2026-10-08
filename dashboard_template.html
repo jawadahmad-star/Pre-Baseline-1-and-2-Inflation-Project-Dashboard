@@ -1582,15 +1582,16 @@ function exportPDF(){
     // Browsers re-lay-out and can blank canvases when printing, so every chart also gets a still image.
     // The images stay hidden on screen and are shown by the print stylesheet (canvases are hidden there),
     // so the report is correct whenever the print preview is (re)rendered.
+    const imgs = [];
     document.querySelectorAll('canvas').forEach(cv=>{
       if(!Chart.getChart(cv)) return;
       const img = new Image(); img.className = 'print-img'; img.src = cv.toDataURL('image/png');
-      cv.parentNode.appendChild(img);
+      cv.parentNode.appendChild(img); imgs.push(img);
     });
     document.querySelectorAll('.panel').forEach(p=>p.style.display='');
     Chart.defaults.animation = prevAnim; window.__noAnim = false;
-    showLoading(false);
-    window.print();
+    // Wait until every image is decoded - printing before that gives empty boxes.
+    Promise.all(imgs.map(i=>i.decode().catch(()=>{}))).then(()=>setTimeout(()=>{ showLoading(false); window.print(); }, 400));
   }, 500);
 }
 let __rz;
