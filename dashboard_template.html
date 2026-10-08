@@ -320,6 +320,7 @@
 
     .how-to { background:var(--tint-amber); color:var(--on-tint-amber); border-radius:10px; padding:10px 14px; font-size:12.5px; line-height:1.6; margin:0 0 12px; }
     .how-to b { font-weight:700; }
+    .print-img { display:none; }
     .print-only { display:none; }
     @media (max-width:1000px) { .btn.filters-toggle { display:inline-block; } }
     @media (max-width:640px) {
@@ -354,7 +355,8 @@
       .chart-wrap { height:240px; } .chart-wrap.tall { height:300px; }
       .chart-card, .kpi-card, .land-card, .tbl-block, .banner-card { break-inside:avoid; page-break-inside:avoid; }
       .section-header { break-after:avoid; }
-      .print-img { display:block; width:100%; height:100%; object-fit:contain; }
+      .chart-wrap canvas { display:none !important; }
+      .print-img { display:block !important; width:100%; height:100%; object-fit:contain; }
       .chart-wrap { overflow:visible; }
       .print-head-title { display:flex; align-items:center; justify-content:space-between; background:#1E2438; color:#fff; padding:12px 18px; border-radius:10px; border-bottom:4px solid #E8192C; margin-bottom:10px; }
       .print-head-title b { font-family:'Playfair Display',serif; font-size:20px; }
@@ -842,6 +844,7 @@ function has(id, arr){
 function mk(id, cfg){
   const el = $(id); if(!el) return null;
   const prev = Chart.getChart(el); if(prev) prev.destroy();
+  el.parentNode.querySelectorAll('img.print-img').forEach(i=>i.remove());   // drop a stale print image
   const chart = new Chart(el, cfg);
   attachDownload(el, id);
   return chart;
@@ -1145,7 +1148,7 @@ function drawPanel(id){
   fn();
   animateKpis(id);
 }
-function destroyAllCharts(){ document.querySelectorAll('canvas').forEach(c=>{ const ch=Chart.getChart(c); if(ch) ch.destroy(); }); }
+function destroyAllCharts(){ document.querySelectorAll('img.print-img').forEach(i=>i.remove()); document.querySelectorAll('canvas').forEach(c=>{ const ch=Chart.getChart(c); if(ch) ch.destroy(); }); }
 function redrawAll(){ destroyAllCharts(); drawn.clear(); drawPanel(activePanelId()); }
 function refresh(survey){
   const panel = document.querySelector('.panel.active');
@@ -1569,31 +1572,24 @@ async function exportExcel(){
 /* PDF = the browser's print dialog ("Save as PDF").  All panels are drawn first so the report is complete. */
 function exportPDF(){
   showLoading(true, 'Preparing report…');
-  document.body.classList.add('print-all');
   const skip = STATE.survey===1 ? 'panel-mod2' : 'panel-mod1';   // the other survey's tab is not part of this report
-  document.querySelectorAll('.panel').forEach(p=>{ if(p.id===skip) p.classList.add('print-skip'); else p.style.display='block'; });
   const prevAnim = Chart.defaults.animation;
-  window.__noAnim = true; Chart.defaults.animation = false;   // draw instantly so nothing is half-rendered when printed
+  window.__noAnim = true; Chart.defaults.animation = false;      // draw instantly so nothing is half-rendered
+  document.querySelectorAll('.panel').forEach(p=>{ if(p.id!==skip) p.style.display='block'; });   // charts need a real size to draw
   destroyAllCharts(); drawn.clear();
-  Object.keys(PANEL_DRAW).forEach(id=>{ if((id==='mod1'&&STATE.survey!==1)||(id==='mod2'&&STATE.survey!==2)) return; drawPanel(id); });
-  const swapped = [];
-  const restore = () => {
-    swapped.forEach(([cv,img])=>{ img.remove(); cv.style.display=''; });
-    document.body.classList.remove('print-all');
-    document.querySelectorAll('.panel').forEach(p=>{ p.style.display=''; p.classList.remove('print-skip'); });
-    Chart.defaults.animation = prevAnim; window.__noAnim = false;
-    redrawAll();
-    window.removeEventListener('afterprint', restore);
-  };
+  Object.keys(PANEL_DRAW).forEach(id=>{ if('panel-'+id!==skip) drawPanel(id); });
   setTimeout(()=>{
-    // Browsers re-size canvases for print and can blank them, so print a still image of each chart instead.
+    // Browsers re-lay-out and can blank canvases when printing, so every chart also gets a still image.
+    // The images stay hidden on screen and are shown by the print stylesheet (canvases are hidden there),
+    // so the report is correct whenever the print preview is (re)rendered.
     document.querySelectorAll('canvas').forEach(cv=>{
       if(!Chart.getChart(cv)) return;
       const img = new Image(); img.className = 'print-img'; img.src = cv.toDataURL('image/png');
-      cv.style.display = 'none'; cv.parentNode.appendChild(img); swapped.push([cv,img]);
+      cv.parentNode.appendChild(img);
     });
+    document.querySelectorAll('.panel').forEach(p=>p.style.display='');
+    Chart.defaults.animation = prevAnim; window.__noAnim = false;
     showLoading(false);
-    window.addEventListener('afterprint', restore);
     window.print();
   }, 500);
 }
