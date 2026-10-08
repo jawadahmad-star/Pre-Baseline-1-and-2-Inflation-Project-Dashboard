@@ -344,6 +344,16 @@
       body { background:#fff; }
       .panel { page-break-before:always; }
       #panel-overview { page-break-before:avoid; }
+      html, body { zoom:.74; }
+      body.print-all .panel.print-skip { display:none !important; }
+      .chart-grid.cols-2 { grid-template-columns:repeat(2,1fr) !important; }
+      .chart-grid.cols-3 { grid-template-columns:repeat(3,1fr) !important; }
+      .kpi-grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)) !important; gap:10px; margin-bottom:14px; }
+      .land-prog { grid-template-columns:repeat(2,1fr) !important; }
+      .chart-grid { gap:12px; margin-bottom:12px; }
+      .chart-wrap { height:240px; } .chart-wrap.tall { height:300px; }
+      .chart-card, .kpi-card, .land-card, .tbl-block, .banner-card { break-inside:avoid; page-break-inside:avoid; }
+      .section-header { break-after:avoid; }
       .print-img { display:block; width:100%; height:100%; object-fit:contain; }
       .chart-wrap { overflow:visible; }
       .print-head-title { display:flex; align-items:center; justify-content:space-between; background:#1E2438; color:#fff; padding:12px 18px; border-radius:10px; border-bottom:4px solid #E8192C; margin-bottom:10px; }
@@ -1190,6 +1200,7 @@ function callout(cls,icon,h,p){
   return `<div class="callout ${cls}"><div class="callout-icon">${icon}</div><div class="callout-body"><h4>${h}</h4><p>${p}</p></div></div>`;
 }
 function animateKpis(panelId){
+  if(window.__noAnim) return;          // PDF export needs final numbers, not mid-count values
   document.querySelectorAll('#panel-' + panelId + ' .kpi-value').forEach(el=>{
     const m = el.textContent.match(/^([\d,]+(?:\.\d+)?)(.*)$/);
     if(!m) return;
@@ -1559,17 +1570,18 @@ async function exportExcel(){
 function exportPDF(){
   showLoading(true, 'Preparing report…');
   document.body.classList.add('print-all');
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='block');
+  const skip = STATE.survey===1 ? 'panel-mod2' : 'panel-mod1';   // the other survey's tab is not part of this report
+  document.querySelectorAll('.panel').forEach(p=>{ if(p.id===skip) p.classList.add('print-skip'); else p.style.display='block'; });
   const prevAnim = Chart.defaults.animation;
-  Chart.defaults.animation = false;                 // draw instantly so nothing is half-rendered when printed
+  window.__noAnim = true; Chart.defaults.animation = false;   // draw instantly so nothing is half-rendered when printed
   destroyAllCharts(); drawn.clear();
   Object.keys(PANEL_DRAW).forEach(id=>{ if((id==='mod1'&&STATE.survey!==1)||(id==='mod2'&&STATE.survey!==2)) return; drawPanel(id); });
   const swapped = [];
   const restore = () => {
     swapped.forEach(([cv,img])=>{ img.remove(); cv.style.display=''; });
     document.body.classList.remove('print-all');
-    document.querySelectorAll('.panel').forEach(p=>p.style.display='');
-    Chart.defaults.animation = prevAnim;
+    document.querySelectorAll('.panel').forEach(p=>{ p.style.display=''; p.classList.remove('print-skip'); });
+    Chart.defaults.animation = prevAnim; window.__noAnim = false;
     redrawAll();
     window.removeEventListener('afterprint', restore);
   };
