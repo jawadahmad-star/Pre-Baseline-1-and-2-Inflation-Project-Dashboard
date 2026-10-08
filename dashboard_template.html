@@ -728,7 +728,13 @@ function showPanel(id, btn) {
   $('panel-' + id).classList.add('active');
   (btn || document.querySelector(`.nav-tab[data-p="${id}"]`)).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  syncToggleVisibility();
   drawPanel(id);
+}
+/* On a survey-specific tab only that survey's toggle button is shown (PB1 tab hides PB2, PB2 tab hides PB1). */
+function syncToggleVisibility(){
+  const id = activePanelId(), only = id==='mod1' ? '1' : id==='mod2' ? '2' : null;
+  $('survey-seg').querySelectorAll('button').forEach(b=>{ b.style.display = (!only || b.dataset.s===only) ? '' : 'none'; });
 }
 function activePanelId(){ const a = document.querySelector('.panel.active'); return a ? a.id.replace('panel-','') : 'overview'; }
 
