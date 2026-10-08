@@ -391,7 +391,6 @@
     </div>
     <nav class="nav-tabs" id="navTabs">
       <button class="nav-tab active" data-p="overview" onclick="showPanel('overview',this)">📊 Overview</button>
-      <button class="nav-tab" data-p="ops" onclick="showPanel('ops',this)">🛠️ Field Progress</button>
       <button class="nav-tab" data-p="prof" onclick="showPanel('prof',this)">🏪 Shop &amp; Manager Profile</button>
       <button class="nav-tab" data-p="exp" onclick="showPanel('exp',this)">📈 Inflation Expectations</button>
       <button class="nav-tab" data-p="mod1" data-sv="1" onclick="showPanel('mod1',this)">🧠 Understanding &amp; Decisions<span class="sv-tag">PB1</span></button>
@@ -458,7 +457,7 @@
     <div class="chart-grid cols-2">
       <div class="chart-card full">
         <h3>Daily Completed Interviews</h3>
-        <div class="chart-desc">Completed interviews per field day, with a 3-day rolling average</div>
+        <div class="chart-desc">Number of interviews completed on each field day</div>
         <div class="chart-wrap"><canvas id="chartDaily"></canvas></div>
       </div>
     </div>
@@ -494,46 +493,12 @@
     <p class="footnote">Target = shops in the sampling frame flagged as the primary sample (sample_role&nbsp;=&nbsp;1); replacement shops are visited only when a primary shop cannot be interviewed. Completed = interview finished with the manager's consent. Expectations outside the valid range are excluded from averages.</p>
   </div>
 
-  <!-- ---------- FIELD PROGRESS ---------- -->
-  <div class="panel" id="panel-ops">
-    <div class="section-header">
-      <div class="section-header-accent"></div>
-      <div>
-        <div class="eyebrow">Section 02</div>
-        <h2>Field Progress</h2>
-        <p>How collection is going: cumulative progress against the target, output by enumerator, and interview length. Location, enumerator and date filters apply here; manager-profile filters (shop type, education, age) do not, because refusals and non-contacts have no profile.</p>
-      </div>
-    </div>
-    <div class="kpi-grid" id="op-kpis"></div>
-    <div class="chart-grid">
-      <div class="chart-card full">
-        <h3>Cumulative Completion vs Target</h3>
-        <div class="chart-desc">Running total of completed interviews against the sample target</div>
-        <div class="chart-wrap tall"><canvas id="chartCumulative"></canvas></div>
-      </div>
-    </div>
-    <div class="chart-grid cols-2">
-      <div class="chart-card">
-        <h3>Visit Outcomes by Enumerator</h3>
-        <div class="chart-desc">Stacked count of completed, partial, refused and not-reached visits per field team member</div>
-        <div class="chart-wrap auto"><canvas id="chartEnums"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <h3>Interview Duration</h3>
-        <div class="chart-desc">Completed interviews by length in minutes</div>
-        <div class="chart-wrap tall"><canvas id="chartDuration"></canvas></div>
-      </div>
-    </div>
-    <div class="insight-row" id="op-insights"></div>
-    <p class="footnote">Enumerators are shown as anonymised codes. Duration is the elapsed instrument time. The projected finish extrapolates the average daily completion rate observed so far.</p>
-  </div>
-
   <!-- ---------- PROFILE ---------- -->
   <div class="panel" id="panel-prof">
     <div class="section-header">
       <div class="section-header-accent"></div>
       <div>
-        <div class="eyebrow">Section 03</div>
+        <div class="eyebrow">Section 02</div>
         <h2>Shop &amp; Manager Profile</h2>
         <p>Who was interviewed: the type, size and age of the shops, and the education, age and experience of their managers. These are the characteristics used to filter every other tab.</p>
       </div>
@@ -561,7 +526,7 @@
     <div class="section-header">
       <div class="section-header-accent"></div>
       <div>
-        <div class="eyebrow">Section 04</div>
+        <div class="eyebrow">Section 03</div>
         <h2>Inflation Expectations</h2>
         <p>What shop managers expect inflation in Pakistan to be over the next twelve months — the overall distribution, how it differs by shop type, education, age and block, and (in Pre-Baseline&nbsp;1) how expectations moved after managers were given official information.</p>
       </div>
@@ -588,7 +553,7 @@
     <div class="section-header">
       <div class="section-header-accent"></div>
       <div>
-        <div class="eyebrow">Section 05 · Pre-Baseline 1 · Modules A, C &amp; E</div>
+        <div class="eyebrow">Section 04 · Pre-Baseline 1 · Modules A, C &amp; E</div>
         <h2>Understanding &amp; Planned Decisions</h2>
         <p>How well managers understand inflation, which way they say they will adjust prices, wages, borrowing, investment and staffing over the next three months, and how those plans change once they are told the official inflation forecast.</p>
       </div>
@@ -615,7 +580,7 @@
     <div class="section-header">
       <div class="section-header-accent"></div>
       <div>
-        <div class="eyebrow">Section 05 · Pre-Baseline 2 · Module B</div>
+        <div class="eyebrow">Section 04 · Pre-Baseline 2 · Module B</div>
         <h2>Communication Network</h2>
         <p>Where managers get their inflation information, how often and how far they talk to other firms in the bazaar, and what makes a conversation memorable — a picture of how inflation information travels between shops.</p>
       </div>
@@ -649,16 +614,24 @@
     <div class="section-header">
       <div class="section-header-accent"></div>
       <div>
-        <div class="eyebrow">Section 06 · Operational tracker</div>
+        <div class="eyebrow">Section 05 · Operational tracker</div>
         <h2>Block Tracker &amp; Data</h2>
-        <p>Completion status for every block in the sampling frame, plus a de-identified log of every shop visit. Search, click any column header to sort, and export either table to CSV. Manager-profile filters apply to the interview log only.</p>
+        <p>Completion status for every block in the sampling frame, plus a de-identified log of every shop visit. Search, click any column header to sort, and export either table to CSV. Manager-profile filters (shop type, education, age) apply to the interview log only.</p>
       </div>
     </div>
     <div class="kpi-grid" id="tk-kpis"></div>
     <div class="land-prog-head">📐 Progress by Survey</div>
     <div class="land-prog" id="tk-cards" style="grid-template-columns:repeat(2,1fr)"></div>
 
-    <div class="tbl-block" style="margin-top:28px">
+    <div class="chart-grid" style="margin-top:28px">
+      <div class="chart-card full">
+        <h3>Visit Outcomes by Enumerator</h3>
+        <div class="chart-desc">Stacked count of completed, partial, refused and not-reached visits per field team member (enumerators shown as anonymised codes)</div>
+        <div class="chart-wrap auto"><canvas id="chartEnums"></canvas></div>
+      </div>
+    </div>
+
+    <div class="tbl-block">
       <div class="tbl-title">Block Completion Tracker</div>
       <div class="tbl-desc">Completed interviews against the primary-sample target in each block.</div>
       <div class="mz-toolbar">
@@ -938,17 +911,15 @@ function donutChart(id, arr, colors){
 function lineChart(id, arr){
   if(!has(id, arr.map(x=>({value:x.count})))) return;
   const vals = arr.map(x=>x.count);
-  const roll = vals.map((_,i)=>{ const s=Math.max(0,i-2), w=vals.slice(s,i+1); return +(w.reduce((a,b)=>a+b,0)/w.length).toFixed(1); });
-  mk(id,{type:'line',
+    mk(id,{type:'line',
     data:{labels:arr.map(x=>fmtD(x.date)), datasets:[
       {label:'Completed', data:vals, borderColor:S(2), backgroundColor:'rgba(232,25,44,.10)', fill:true, tension:.3,
-       pointBackgroundColor:S(2), pointRadius:4, pointHoverRadius:6, borderWidth:2.5, order:2},
-      {label:'3-day average', data:roll, borderColor:S(1), borderDash:[6,5], borderWidth:2, pointRadius:0, fill:false, tension:.35, order:1}
+       pointBackgroundColor:S(2), pointRadius:4, pointHoverRadius:6, borderWidth:2.5}
     ]},
     options:baseOpts({
       layout:{padding:{top:22}},
-      plugins:{legend:{position:'top',align:'end',labels:{font:FONT,color:TXT(),boxWidth:14,padding:12}},
-        datalabels:{display:c=>c.datasetIndex===0,anchor:'end',align:'top',color:TXT(),font:{family:'Inter',size:10.5,weight:'700'}}},
+      plugins:{legend:{display:false},
+        datalabels:{display:true,anchor:'end',align:'top',color:TXT(),font:{family:'Inter',size:10.5,weight:'700'}}},
       scales:{x:{ticks:{font:{family:'Inter',size:11},color:TXT()},grid:{display:false},border:{display:false}},
               y:{beginAtZero:true,grace:'14%',ticks:{font:{family:'Inter',size:11},color:TXT(),precision:0},grid:{color:GRID()},border:{display:false}}}})});
 }
@@ -1154,7 +1125,7 @@ function renderSampleNote(){
 // ============================================================
 //  RENDER ORCHESTRATION
 // ============================================================
-const PANEL_DRAW = { overview:drawOverview, ops:drawOps, prof:drawProf, exp:drawExp, mod1:drawMod1, mod2:drawMod2, trk:drawTrk };
+const PANEL_DRAW = { overview:drawOverview, prof:drawProf, exp:drawExp, mod1:drawMod1, mod2:drawMod2, trk:drawTrk };
 const drawn = new Set();
 function drawPanel(id){
   const fn = PANEL_DRAW[id];
@@ -1312,34 +1283,6 @@ function drawOverview(){
 // ============================================================
 //  PANEL: FIELD PROGRESS
 // ============================================================
-function drawOps(){
-  const fl = FLD(), done = fl.filter(r=>r.cm), T = targetNow();
-  const days = new Set(fl.map(r=>r.d)).size, ens = new Set(fl.map(r=>r.en)).size;
-  const perDay = days ? done.length/days : 0, remaining = Math.max(T - done.length, 0);
-  const daysLeft = perDay ? Math.ceil(remaining/perDay) : null;
-  const conv = share(done.length, fl.length);
-  $('op-kpis').innerHTML =
-    kpi('📅', days, 'Field Days', 'Last activity ' + (fl.length ? fmtD(fl.map(r=>r.d).sort().pop()) : '—'), 'navy', 'navy') +
-    kpi('⚡', fx(perDay), 'Completes per Day', 'Average over field days', 'up', 'green') +
-    kpi('👥', ens, 'Active Enumerators', ens ? '~'+fx(done.length/ens)+' completes each' : '—', 'navy', 'teal') +
-    kpi('⏱️', fx(median(done.map(r=>r.dur))), 'Median Duration (min)', 'Completed interviews', 'neutral', 'amber') +
-    kpi('📈', conv==null ? '—' : conv+'%', 'Visit Conversion', 'Visits ending in an interview', 'neutral', 'purple');
-  $('op-insights').innerHTML = !fl.length ? '' :
-    `<div class="insight-box teal"><strong>Pace:</strong> the team is averaging <strong>${fx(perDay)}</strong> completed interviews per field day. ` +
-    (T ? (remaining ? `At that rate the remaining <strong>${remaining}</strong> interviews would take roughly <strong>${daysLeft==null?'—':daysLeft}</strong> more field days.` : 'The sample target has been reached.') : '') + `</div>` +
-    `<div class="insight-box amber"><strong>Conversion:</strong> <strong>${conv==null?'—':conv}%</strong> of shop visits end in a completed interview, about <strong>${done.length ? fx(fl.length/done.length) : '—'}</strong> visits per completed case. ` +
-    `Refusals: <strong>${fl.filter(r=>[3,4,5,6].includes(r.oc)).length}</strong>; not reached: <strong>${fl.filter(r=>[7,8,9,10].includes(r.oc)).length}</strong>.</div>`;
-
-  cumulativeChart('chartCumulative', dailyFilled(fl, done), T);
-
-  const grp = r => r.oc===1 ? 'Completed' : r.oc===2 ? 'Partial' : [3,4,5,6].includes(r.oc) ? 'Refused' : 'Not reached';
-  const order = ['Completed','Partial','Refused','Not reached'];
-  const en = [...new Set(fl.map(r=>r.en))].sort();
-  const st = stackCount(fl, r=>r.en, grp, en, order, [S(6), S(8), S(2), MUTED()]);
-  stackedCountChart('chartEnums', en, st);
-  barChart('chartDuration', tally(done, r=>bandOf(r.dur,[10,15,20,25,30,40],['<10','10–14','15–19','20–24','25–29','30–39','40+']),
-                                  ['<10','10–14','15–19','20–24','25–29','30–39','40+']), S(4), false);
-}
 function stackCount(rs, catFn, serFn, cats, sers, colors){
   return sers.map((s,i)=>({name:s, color:colors[i], data:cats.map(c=>rs.filter(r=>catFn(r)===c && serFn(r)===s).length)}));
 }
@@ -1423,7 +1366,8 @@ function drawMod1(){
   const d = DONE();
   const u1 = d.filter(r=>r.un1!=null), u2 = d.filter(r=>r.un2!=null), cc = d.filter(r=>r.calc!=null);
   const full1 = share(u1.filter(r=>r.un1===2).length, u1.length), full2 = share(u2.filter(r=>r.un2===2).length, u2.length);
-  const framing = tally(d, r=>r.fr!=null ? listLabel('framing3', r.fr) : null);
+  const FR = {1:'Percentage (“Inflation is 6%”)', 2:'Rupee example (“Rs 100 → Rs 106”)', 3:'Both equally easy'};
+  const framing = tally(d, r=>r.fr!=null ? FR[r.fr] : null, Object.values(FR));
   $('m1-kpis').innerHTML =
     kpi('🧠', full1==null ? '—' : full1+'%', 'Fully Understand “Inflation”', 'Before the definition was read', 'neutral', 'teal') +
     kpi('📘', full2==null ? '—' : full2+'%', 'Understand After Definition', full1!=null&&full2!=null ? (full2-full1>=0?'+':'')+(full2-full1)+' pts vs before' : '—', 'up', 'green') +
@@ -1432,7 +1376,7 @@ function drawMod1(){
   donutChart('chartUn1', tally(u1, r=>listLabel('understand3', r.un1), listLabels('understand3')), [S(2), S(8), S(6)]);
   donutChart('chartUn2', tally(u2, r=>listLabel('understand3', r.un2), listLabels('understand3')), [S(2), S(8), S(6)]);
   donutChart('chartCalc', tally(cc, r=>r.calc ? 'Correct (103)' : 'Incorrect', ['Correct (103)','Incorrect']), [S(6), S(2)]);
-  barChart('chartFraming', framing.map(x=>({label:x.label.length>46 ? x.label.slice(0,44)+'…' : x.label, value:x.value})), S(5), true);
+  barChart('chartFraming', framing, S(5), true);
 
   const col = (k,i) => d.map(r=> r[k] ? pv(r[k][i]) : null);
   const preM = MARGIN_LABELS.map((_,i)=>r1(mean(col('c',i)))), postM = MARGIN_LABELS.map((_,i)=>r1(mean(col('e',i))));
@@ -1568,6 +1512,9 @@ function drawTrk(){
       <div class="lc-track"><span style="width:${Math.min(pct,100)}%;background:${c}"></span></div>
       <div class="lc-foot"><span class="lc-pct" style="color:${c}">${pct}%</span>${statusBadge(st.done>=st.target&&st.target ? 'Completed' : st.done ? 'In Progress' : 'Not Started')}</div></div>`;
   }).join('');
+  const grp = r => r.oc===1 ? 'Completed' : r.oc===2 ? 'Partial' : [3,4,5,6].includes(r.oc) ? 'Refused' : 'Not reached';
+  const en = [...new Set(fl.map(r=>r.en))].sort();
+  stackedCountChart('chartEnums', en, stackCount(fl, r=>r.en, grp, en, ['Completed','Partial','Refused','Not reached'], [S(6), S(8), S(2), MUTED()]));
   renderTable('blk'); renderTable('log');
 }
 function surveyStatsField(s){
