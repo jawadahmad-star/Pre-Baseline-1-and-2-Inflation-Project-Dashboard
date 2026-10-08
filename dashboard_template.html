@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Inflation Project — Pre-Baseline 1 &amp; 2 survey dashboard. Research Solutions." />
+  <title>Inflation Project — Pre-Baseline Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rs-red:#E8192C; --rs-red-dark:#B5101E; --rs-red-mid:#C41020; --rs-red-muted:#F47885; --rs-red-light:#FDECEA; --rs-red-50:#FFF5F5;
+      --rs-navy:#2D3450; --rs-navy-dark:#1E2438; --rs-navy-mid:#3D4566; --rs-navy-soft:#6B7494; --rs-navy-light:#E8EAF2; --rs-navy-50:#F2F3F8;
+      --rs-cream:#FAF8F4; --white:#FFFFFF;
+      --teal-700:#0E7490; --teal-500:#0891B2; --teal-300:#67E8F9; --teal-100:#CFFAFE; --teal-50:#ECFEFF;
+      --amber-600:#D97706; --amber-500:#F59E0B; --amber-400:#FBBF24; --amber-100:#FEF3C7; --amber-50:#FFFBEB;
+      --purple-700:#6D28D9; --purple-500:#8B5CF6; --purple-100:#EDE9FE; --purple-50:#F5F3FF;
+      --green-600:#16A34A; --green-100:#DCFCE7; --green-50:#F0FDF4;
+      --n-900:#0f172a; --n-800:#1e293b; --n-700:#334155; --n-600:#475569; --n-400:#94a3b8; --n-200:#e2e8f0; --n-100:#f1f5f9;
+
+      /* semantic surfaces — the only things dark mode re-points */
+      --bg:#FAF8F4;
+      --surface:#FFFFFF;
+      --surface-2:#FFFFFF;
+      --text:#2D3450;
+      --text-2:#475569;
+      --text-3:#94A3B8;
+      --border:#E2E8F0;
+      --track:#F1F5F9;
+      --grid:#EEF1F6;
+      /* categorical series slots — assigned in fixed order, never cycled.
+         Validated against the #FFFFFF chart surface: lightness band, chroma
+         floor, protan/deutan separation, normal-vision floor and 3:1 contrast
+         all pass. Re-run the validator before changing any of these. */
+      --series-1:#3C549D; --series-2:#D31929; --series-3:#198FAF; --series-4:#C06B42;
+      --series-5:#8356C4; --series-6:#179142; --series-7:#D65E91; --series-8:#CC851B;
+      --muted-fill:#E2E8F0;
+      --shadow:0 1px 4px rgba(45,52,80,.07),0 4px 16px rgba(45,52,80,.05);
+      --shadow-lg:0 6px 24px rgba(45,52,80,.12);
+      --tint-red:var(--rs-red-light); --tint-navy:var(--rs-navy-light); --tint-amber:var(--amber-100);
+      --tint-teal:var(--teal-100); --tint-purple:var(--purple-100); --tint-green:var(--green-100);
+      --on-tint-red:#6B0A12; --on-tint-navy:var(--rs-navy-dark); --on-tint-amber:#78350f;
+      --on-tint-teal:var(--teal-700); --on-tint-purple:var(--purple-700); --on-tint-green:#14532d;
+    }
+    html[data-theme="dark"] {
+      --bg:#12151F;
+      --surface:#1A1F2E;
+      --surface-2:#222839;
+      --text:#E7EAF3;
+      --text-2:#A3ADC2;
+      --text-3:#6F7A91;
+      --border:#2C3346;
+      --track:#252B3B;
+      --grid:#262D3E;
+      --shadow:0 1px 4px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.28);
+      --shadow-lg:0 8px 28px rgba(0,0,0,.5);
+      --rs-navy-50:#202635; --rs-navy-light:#2A3145; --n-100:#252B3B; --n-200:#2C3346;
+      /* Same eight hues re-stepped for the #1A1F2E surface and validated
+         against it — not a lightened flip of the light set. */
+      --series-1:#5B79D2; --series-2:#EC2130; --series-3:#1B96B7; --series-4:#D76528;
+      --series-5:#9C59F2; --series-6:#1CA24B; --series-7:#B74276; --series-8:#BE8334;
+      --muted-fill:#333B50;
+      --tint-red:#3A1A20; --tint-navy:#232A3D; --tint-amber:#3A2E12;
+      --tint-teal:#12313B; --tint-purple:#2A2140; --tint-green:#12321F;
+      --on-tint-red:#FCA5AD; --on-tint-navy:#C3CAE0; --on-tint-amber:#FCD34D;
+      --on-tint-teal:#67E8F9; --on-tint-purple:#C4B5FD; --on-tint-green:#86EFAC;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh;
+           transition:background .25s ease, color .25s ease; -webkit-font-smoothing:antialiased; }
+
+    /* ===================== HEADER ===================== */
+    .header { background:var(--rs-navy-dark); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,0,0,.35); border-bottom:3px solid var(--rs-red); }
+    .header-inner { max-width:1440px; margin:0 auto; padding:0 32px; display:flex; flex-direction:column; }
+    .header-top { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:14px 0 12px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .header-logo-wrap img { height:44px; display:block; }
+    .header-study { text-align:center; flex:1; padding:0 16px; }
+    .header-study-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#fff; letter-spacing:-.2px; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+    .demo-chip { font-family:'Inter',sans-serif; font-size:9.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:var(--amber-500); color:#1E2438; padding:3px 9px; border-radius:5px; }
+    .header-study-sub { font-size:11px; color:rgba(255,255,255,.55); letter-spacing:.6px; text-transform:uppercase; margin-top:4px; }
+    .header-meta { text-align:right; font-size:12px; color:rgba(255,255,255,.55); line-height:1.7; white-space:nowrap; }
+    .header-meta strong { color:rgba(255,255,255,.9); font-size:13px; }
+    .header-pill { display:inline-block; background:var(--rs-red); color:#fff; font-size:10px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; padding:3px 10px; border-radius:99px; margin-top:4px; }
+    .theme-toggle { margin-top:8px; display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.8);
+                    font-family:'Inter',sans-serif; font-size:11px; font-weight:600; letter-spacing:.3px; padding:5px 11px; border-radius:99px; cursor:pointer; transition:background .2s,color .2s; }
+    .theme-toggle:hover { background:rgba(255,255,255,.18); color:#fff; }
+
+    .nav-tabs { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; }
+    .nav-tabs::-webkit-scrollbar { display:none; }
+    .nav-tab { padding:10px 16px; font-size:12.5px; font-weight:500; color:rgba(255,255,255,.55); cursor:pointer; border-radius:8px 8px 0 0; border:none; background:transparent; white-space:nowrap; transition:all .2s; letter-spacing:.2px; font-family:'Inter',sans-serif; }
+    .nav-tab:hover { color:rgba(255,255,255,.92); background:rgba(255,255,255,.07); }
+    .nav-tab.active { color:var(--text); background:var(--bg); font-weight:700; border-top:2px solid var(--rs-red); }
+
+    .main { max-width:1440px; margin:0 auto; padding:28px 32px 60px; }
+    .panel { display:none; }
+    .panel.active { display:block; animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    .section-header { margin-bottom:26px; padding-bottom:16px; border-bottom:2px solid var(--border); display:flex; align-items:flex-start; gap:14px; }
+    .section-header-accent { width:4px; min-height:52px; border-radius:99px; background:var(--rs-red); flex-shrink:0; margin-top:4px; }
+    .section-header h2 { font-size:26px; font-weight:700; color:var(--text); font-family:'Playfair Display',serif; }
+    .section-header .eyebrow { font-size:10.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--rs-red); margin-bottom:5px; }
+    .section-header p { font-size:14px; color:var(--text-2); margin-top:6px; line-height:1.65; max-width:880px; }
+
+    /* ===================== KPI ===================== */
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:26px; }
+    .kpi-card { background:var(--surface); border-radius:14px; padding:22px 20px; box-shadow:var(--shadow); border-left:4px solid var(--rs-red); transition:transform .2s,box-shadow .2s; position:relative; overflow:hidden; }
+    .kpi-card::after { content:''; position:absolute; top:0; right:0; width:80px; height:80px; background:var(--tint-red); border-radius:0 14px 0 80px; opacity:.7; }
+    .kpi-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+    .kpi-card.navy { border-left-color:var(--rs-navy-soft); } .kpi-card.navy::after { background:var(--tint-navy); }
+    .kpi-card.amber { border-left-color:var(--amber-500); } .kpi-card.amber::after { background:var(--tint-amber); }
+    .kpi-card.teal { border-left-color:var(--teal-500); } .kpi-card.teal::after { background:var(--tint-teal); }
+    .kpi-card.purple { border-left-color:var(--purple-500); } .kpi-card.purple::after { background:var(--tint-purple); }
+    .kpi-card.green { border-left-color:var(--green-600); } .kpi-card.green::after { background:var(--tint-green); }
+    .kpi-icon { font-size:24px; margin-bottom:10px; position:relative; z-index:1; }
+    .kpi-value { font-size:32px; font-weight:800; color:var(--text); line-height:1; position:relative; z-index:1; letter-spacing:-.6px; font-variant-numeric:tabular-nums; }
+    .kpi-label { font-size:11.5px; color:var(--text-2); margin-top:7px; text-transform:uppercase; letter-spacing:.5px; font-weight:600; position:relative; z-index:1; }
+    .kpi-delta { font-size:11px; font-weight:600; margin-top:9px; padding:3px 8px; border-radius:99px; display:inline-block; position:relative; z-index:1; }
+    .kpi-delta.up { background:var(--tint-teal); color:var(--on-tint-teal); }
+    .kpi-delta.down { background:var(--tint-red); color:var(--on-tint-red); }
+    .kpi-delta.neutral { background:var(--tint-amber); color:var(--on-tint-amber); }
+    .kpi-delta.navy { background:var(--tint-navy); color:var(--on-tint-navy); }
+
+    /* ===================== CHART CARDS ===================== */
+    .chart-grid { display:grid; gap:20px; margin-bottom:24px; }
+    .chart-grid.cols-2 { grid-template-columns:repeat(2,1fr); }
+    .chart-grid.cols-3 { grid-template-columns:repeat(3,1fr); }
+    .chart-card { background:var(--surface); border-radius:14px; padding:22px 24px 24px; box-shadow:var(--shadow); position:relative; transition:box-shadow .2s; }
+    .chart-card:hover { box-shadow:var(--shadow-lg); }
+    .chart-card.full { grid-column:1/-1; }
+    .chart-card h3 { font-size:14.5px; font-weight:700; color:var(--text); margin-bottom:4px; padding-left:10px; border-left:3px solid var(--rs-red); padding-right:34px; }
+    .chart-desc { font-size:12px; color:var(--text-2); margin:6px 0 16px 13px; line-height:1.5; padding-right:34px; }
+    /* Chart.js runs with maintainAspectRatio:false, so the *container* owns the
+       height. `.auto` wrappers get an inline height from fitHeight() instead. */
+    .chart-wrap { position:relative; height:280px; }
+    .chart-wrap.tall { height:360px; }
+    .chart-wrap.auto { height:auto; }
+    .chart-wrap canvas { display:block; }
+    .card-dl { position:absolute; top:18px; right:16px; width:28px; height:28px; border-radius:8px; border:1px solid var(--border); background:transparent;
+               color:var(--text-3); font-size:13px; line-height:1; cursor:pointer; opacity:0; transition:opacity .2s,background .2s,color .2s; }
+    .chart-card:hover .card-dl, .card-dl:focus-visible { opacity:1; }
+    .card-dl:hover { background:var(--rs-red); border-color:var(--rs-red); color:#fff; }
+
+    /* ===================== BOXES ===================== */
+    .insight-box { border-radius:12px; padding:16px 20px; margin-bottom:20px; border-left:4px solid; font-size:13.5px; line-height:1.65; }
+    .insight-box.primary { background:var(--tint-red); border-color:var(--rs-red); color:var(--on-tint-red); }
+    .insight-box.navy { background:var(--tint-navy); border-color:var(--rs-navy-soft); color:var(--on-tint-navy); }
+    .insight-box.amber { background:var(--tint-amber); border-color:var(--amber-500); color:var(--on-tint-amber); }
+    .insight-box.teal { background:var(--tint-teal); border-color:var(--teal-500); color:var(--on-tint-teal); }
+    .insight-box.purple { background:var(--tint-purple); border-color:var(--purple-500); color:var(--on-tint-purple); }
+    .insight-box strong { font-weight:700; }
+    .insight-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+
+    .callout-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:24px; }
+    .callout { border-radius:12px; padding:16px; display:flex; gap:12px; align-items:flex-start; }
+    .callout.primary { background:var(--tint-red); } .callout.navy { background:var(--tint-navy); }
+    .callout.amber { background:var(--tint-amber); } .callout.teal { background:var(--tint-teal); } .callout.purple { background:var(--tint-purple); }
+    .callout-icon { font-size:22px; flex-shrink:0; margin-top:2px; }
+    .callout-body h4 { font-size:13.5px; font-weight:700; color:var(--text); }
+    .callout-body p { font-size:12.5px; color:var(--text-2); margin-top:4px; line-height:1.5; }
+
+    .footnote { font-size:11px; color:var(--text-3); margin-top:18px; padding-top:12px; border-top:1px solid var(--border); line-height:1.6; }
+    .page-footer { background:var(--rs-navy-dark); color:rgba(255,255,255,.45); font-size:11.5px; text-align:center; padding:20px 32px; letter-spacing:.3px; border-top:3px solid var(--rs-red); margin-top:40px; line-height:1.9; }
+    .page-footer strong { color:rgba(255,255,255,.8); }
+
+    /* ===================== LOCALITY TRACKER ===================== */
+    .mz-toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:18px; }
+    .mz-search { flex:1; min-width:240px; padding:11px 16px; border:2px solid var(--border); border-radius:10px; font-family:'Inter',sans-serif; font-size:14px; color:var(--text); background:var(--surface); outline:none; transition:border-color .2s; }
+    .mz-search:focus { border-color:var(--rs-red); }
+    .mz-filter { padding:10px 14px; border:2px solid var(--border); border-radius:10px; font-family:'Inter',sans-serif; font-size:13px; color:var(--text); background:var(--surface); cursor:pointer; outline:none; }
+    .mz-filter:focus { border-color:var(--rs-red); }
+    .mz-count { font-size:12.5px; color:var(--text-2); font-weight:600; margin-left:auto; font-variant-numeric:tabular-nums; }
+    .mz-export { padding:10px 16px; border:none; border-radius:10px; background:var(--rs-navy); color:#fff; font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer; transition:background .2s; }
+    .mz-export:hover { background:var(--rs-red); }
+
+    .mz-table-wrap { background:var(--surface); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+    .mz-scroll { max-height:640px; overflow:auto; }
+    .mz-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .mz-table th { background:var(--rs-navy); color:rgba(255,255,255,.92); font-weight:600; text-align:left; padding:13px 14px; font-size:11px; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; user-select:none; white-space:nowrap; position:sticky; top:0; z-index:2; }
+    .mz-table th:hover { background:var(--rs-navy-mid); }
+    .mz-table th.num, .mz-table td.num { text-align:center; }
+    .mz-table th .arrow { font-size:9px; opacity:.6; margin-left:3px; }
+    .mz-table td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--text-2); }
+    .mz-table tbody tr:hover td { background:var(--rs-navy-50); }
+    .mz-table tbody tr:last-child td { border-bottom:none; }
+    .mz-empty { text-align:center; padding:36px 14px; color:var(--text-3); font-size:13px; }
+    .mz-mauza { font-weight:600; color:var(--text); }
+    .mz-tehsil { font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
+    .mz-land { display:inline-block; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; background:var(--rs-navy-50); color:var(--text-2); white-space:nowrap; }
+    .mz-frac { font-weight:600; font-variant-numeric:tabular-nums; }
+    .mz-frac .done { color:var(--text); } .mz-frac .tgt { color:var(--text-3); }
+    .mz-bar { height:7px; width:90px; background:var(--track); border-radius:99px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:8px; }
+    .mz-bar > span { display:block; height:100%; border-radius:99px; }
+    .mz-pct { font-weight:700; font-size:12.5px; font-variant-numeric:tabular-nums; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .badge-green { background:var(--tint-green); color:var(--on-tint-green); }
+    .badge-amber { background:var(--tint-amber); color:var(--on-tint-amber); }
+    .badge-grey  { background:var(--track);      color:var(--text-3); }
+    .badge-red   { background:var(--tint-red);   color:var(--on-tint-red); }
+
+    .land-prog-head { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-2); margin:26px 0 12px; }
+    .land-prog { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:6px; }
+    .land-card { background:var(--surface); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); }
+    .land-card .lc-bin { font-size:13px; font-weight:700; color:var(--text); }
+    .land-card .lc-frac { margin-top:8px; font-size:20px; font-weight:800; color:var(--text); letter-spacing:-.3px; font-variant-numeric:tabular-nums; }
+    .land-card .lc-frac .lc-tgt { font-size:14px; font-weight:600; color:var(--text-3); }
+    .land-card .lc-track { height:8px; background:var(--track); border-radius:99px; overflow:hidden; margin:12px 0 8px; }
+    .land-card .lc-track > span { display:block; height:100%; border-radius:99px; }
+    .land-card .lc-foot { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
+    .land-card .lc-pct { font-weight:800; font-variant-numeric:tabular-nums; }
+
+    /* ===================== BANNER ===================== */
+    .live-banner { background:linear-gradient(90deg,#241C10 0%,var(--rs-navy-dark) 100%); border-bottom:2px solid var(--amber-500); padding:10px 32px; display:flex; align-items:center; justify-content:center; gap:12px; font-size:12px; color:rgba(255,255,255,.75); letter-spacing:.3px; flex-wrap:wrap; text-align:center; }
+    .live-banner .live-pill { background:var(--amber-500); color:#241C10; font-size:10px; font-weight:800; letter-spacing:.8px; text-transform:uppercase; padding:3px 10px; border-radius:99px; }
+    .live-banner .live-dot { width:8px; height:8px; border-radius:99px; background:var(--amber-400); box-shadow:0 0 0 0 rgba(251,191,36,.6); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(251,191,36,.6);} 70%{box-shadow:0 0 0 8px rgba(251,191,36,0);} 100%{box-shadow:0 0 0 0 rgba(251,191,36,0);} }
+
+    /* ===================== PASSWORD GATE ===================== */
+    #auth-gate { position:fixed; inset:0; z-index:9999; background:radial-gradient(1200px 600px at 50% -10%, #39415f 0%, #1E2438 55%, #141827 100%); display:flex; align-items:center; justify-content:center; flex-direction:column; padding:24px; }
+    .auth-card { background:#fff; border-radius:20px; padding:44px 40px; width:100%; max-width:430px; box-shadow:0 24px 80px rgba(0,0,0,.45); text-align:center; }
+    .auth-logo { width:54px; height:54px; background:var(--rs-red); border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:25px; margin:0 auto 20px; box-shadow:0 8px 20px rgba(232,25,44,.3); }
+    .auth-title { font-family:'Playfair Display',serif; font-size:23px; font-weight:700; color:#2D3450; margin-bottom:6px; }
+    .auth-demo { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:#FEF3C7; color:#78350f; padding:4px 10px; border-radius:5px; margin-bottom:14px; }
+    .auth-subtitle { font-size:13px; color:#475569; margin-bottom:26px; line-height:1.6; }
+    .auth-label { display:block; text-align:left; font-size:12px; font-weight:600; color:#6B7494; letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px; }
+    .auth-input { width:100%; padding:13px 16px; border:2px solid #e2e8f0; border-radius:10px; font-family:'Inter',sans-serif; font-size:15px; color:#2D3450; background:#fff; outline:none; transition:border-color .2s; letter-spacing:.12em; }
+    .auth-input:focus { border-color:var(--rs-red); }
+    .auth-input.error { border-color:var(--rs-red); background:#FFF5F5; animation:shake .32s; }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .auth-btn { width:100%; margin-top:18px; padding:14px; background:var(--rs-red); color:white; border:none; border-radius:10px; cursor:pointer; font-family:'Inter',sans-serif; font-size:15px; font-weight:700; letter-spacing:.2px; transition:background .2s,transform .1s; }
+    .auth-btn:hover { background:var(--rs-red-dark); } .auth-btn:active { transform:scale(.98); }
+    .auth-error { margin-top:12px; font-size:13px; color:var(--rs-red-dark); font-weight:600; min-height:20px; }
+    .auth-footer { margin-top:24px; font-size:11.5px; color:rgba(255,255,255,.4); letter-spacing:.3px; text-align:center; }
+    .auth-footer strong { color:rgba(255,255,255,.65); }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width:1000px) {
+      .chart-grid.cols-2,.chart-grid.cols-3 { grid-template-columns:1fr; }
+      .insight-row { grid-template-columns:1fr; }
+      .main { padding:20px 16px 40px; }
+      .header-top { flex-wrap:wrap; }
+      .header-meta { text-align:left; }
+    }
+    @media (max-width:900px) { .land-prog { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:640px) {
+      .kpi-grid { grid-template-columns:repeat(2,1fr); }
+      .header-inner { padding:0 16px; }
+      .header-study-title { font-size:17px; }
+      .live-banner { padding:10px 16px; }
+      .card-dl { opacity:1; }
+    }
+    @media print {
+      .header, .live-banner, .nav-tabs, .card-dl, .mz-toolbar, .theme-toggle { display:none !important; }
+      .panel { display:block !important; page-break-before:always; }
+      body { background:#fff; }
+    }
+
+    /* ===================================================================
+       INFLATION PROJECT ADDITIONS  (same tokens / radii / shadows as above)
+       =================================================================== */
+
+    /* ---- control strip: survey toggle, filters, exports ---- */
+    .controls { background:var(--surface); border-radius:14px; box-shadow:var(--shadow); padding:16px 20px 18px; margin-bottom:24px; border-top:3px solid var(--rs-red); }
+    .controls-top { display:flex; flex-wrap:wrap; gap:14px 20px; align-items:center; justify-content:space-between; }
+    .seg-wrap { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .seg-label { font-size:10.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text-3); }
+    .seg { display:inline-flex; background:var(--track); border-radius:12px; padding:4px; gap:4px; }
+    .seg button { border:none; background:transparent; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text-2); padding:9px 20px; border-radius:9px; cursor:pointer; transition:background .2s,color .2s,box-shadow .2s; white-space:nowrap; }
+    .seg button:hover { color:var(--text); }
+    .seg button.active { background:var(--rs-red); color:#fff; box-shadow:0 2px 10px rgba(232,25,44,.32); }
+    .ctl-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .btn { padding:10px 16px; border:none; border-radius:10px; background:var(--rs-navy); color:#fff; font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer; transition:background .2s; white-space:nowrap; }
+    .btn:hover { background:var(--rs-red); }
+    .btn.ghost { background:transparent; color:var(--text-2); border:2px solid var(--border); padding:8px 14px; }
+    .btn.ghost:hover { border-color:var(--rs-red); color:var(--rs-red); background:transparent; }
+    .btn.filters-toggle { display:none; }
+    .filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+    .filter label { display:block; font-size:10.5px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
+    .filter select, .filter input { width:100%; padding:10px 12px; border:2px solid var(--border); border-radius:10px; font-family:'Inter',sans-serif; font-size:13px; color:var(--text); background:var(--surface); outline:none; cursor:pointer; transition:border-color .2s; }
+    .filter select:focus, .filter input:focus { border-color:var(--rs-red); }
+    .filter.on select, .filter.on input { border-color:var(--rs-red); background:var(--tint-red); }
+    .sample-note { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-top:14px; font-size:12.5px; color:var(--text-2); }
+    .sample-note strong { color:var(--text); }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .chip { display:inline-flex; align-items:center; gap:6px; background:var(--tint-red); color:var(--on-tint-red); font-size:11.5px; font-weight:600; padding:4px 6px 4px 11px; border-radius:99px; border:none; cursor:pointer; font-family:'Inter',sans-serif; }
+    .chip span { width:16px; height:16px; border-radius:99px; background:rgba(0,0,0,.12); display:inline-flex; align-items:center; justify-content:center; font-size:10px; }
+    .chip:hover span { background:var(--rs-red); color:#fff; }
+    .warn-pill { background:var(--tint-amber); color:var(--on-tint-amber); font-weight:600; font-size:11.5px; padding:3px 10px; border-radius:99px; }
+    .nav-tab .sv-tag { font-size:9px; font-weight:800; letter-spacing:.6px; background:rgba(255,255,255,.14); color:rgba(255,255,255,.85); padding:2px 6px; border-radius:99px; margin-left:6px; }
+    .nav-tab.active .sv-tag { background:var(--tint-red); color:var(--on-tint-red); }
+
+    /* ---- survey-specific blocks ---- */
+    body[data-sv="1"] .only-2, body[data-sv="2"] .only-1 { display:none !important; }
+
+    /* ---- loading + empty + error states ---- */
+    #loading { position:fixed; inset:0; z-index:9500; background:var(--bg); display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; color:var(--text-2); font-size:14px; font-weight:500; }
+    #loading.show { display:flex; }
+    .spinner { width:44px; height:44px; border:4px solid var(--border); border-top-color:var(--rs-red); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .panel.busy { opacity:.45; pointer-events:none; transition:opacity .15s; }
+    .chart-wrap.is-empty canvas { display:none; }
+    .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:100%; min-height:170px; color:var(--text-3); font-size:13px; text-align:center; border:1.5px dashed var(--border); border-radius:12px; padding:16px; }
+    .empty-state .es-ico { font-size:26px; opacity:.8; }
+    .empty-state b { color:var(--text-2); font-weight:600; }
+    .banner-card { border-radius:14px; padding:22px 24px; margin-bottom:24px; background:var(--tint-amber); color:var(--on-tint-amber); border-left:4px solid var(--amber-500); font-size:14px; line-height:1.65; }
+    .banner-card h4 { font-size:15px; margin-bottom:4px; }
+    .banner-card.err { background:var(--tint-red); color:var(--on-tint-red); border-color:var(--rs-red); }
+
+    /* ---- tables (shares .mz-* look) ---- */
+    .tbl-block { margin-bottom:30px; }
+    .tbl-title { font-size:15px; font-weight:700; color:var(--text); margin:6px 0 4px; padding-left:10px; border-left:3px solid var(--rs-red); }
+    .tbl-desc { font-size:12.5px; color:var(--text-2); margin:0 0 14px 13px; }
+    .mz-table td.num, .mz-table th.num { text-align:right; }
+    .mz-table tr.hl td { background:var(--rs-navy-50); font-weight:600; color:var(--text); }
+
+    .print-only { display:none; }
+    @media (max-width:1000px) { .btn.filters-toggle { display:inline-block; } }
+    @media (max-width:640px) {
+      .controls { padding:14px 14px 16px; }
+      .filters { display:none; }
+      .filters.open { display:grid; grid-template-columns:1fr 1fr; }
+      .seg button { padding:9px 13px; font-size:12.5px; }
+      .ctl-actions { width:100%; }
+      .mz-search { min-width:100%; }
+    }
+    @media print {
+      .controls, .btn, #loading { display:none !important; }
+      .print-only { display:block !important; padding:0 0 14px; font-size:12px; color:#334155; }
+      body.print-all .panel { display:block !important; }
+      .chart-card, .kpi-card, .land-card { break-inside:avoid; box-shadow:none; border:1px solid #e2e8f0; }
+      .mz-scroll { max-height:none !important; overflow:visible !important; }
+      .page-footer { margin-top:10px; }
+      .only-1, .only-2 { display:none; }
+      body[data-sv="1"] .only-1, body[data-sv="2"] .only-2 { display:block; }
+      body[data-sv="1"] .nav-tab[data-sv="2"], body[data-sv="2"] .nav-tab[data-sv="1"] { display:none; }
+    }
+
+  </style>
+</head>
+<body data-sv="1">
+
+<!-- ===================== PASSWORD GATE ===================== -->
+<div id="auth-gate">
+  <div class="auth-card">
+    <div class="auth-logo">📈</div>
+    <div class="auth-demo" id="auth-demo" style="display:none">Dummy Data</div>
+    <div class="auth-title">Inflation Project</div>
+    <div class="auth-subtitle">Pre-Baseline survey dashboard.<br>Access is restricted — please enter the password provided by Research Solutions.</div>
+    <label class="auth-label" for="auth-pw">Access Password</label>
+    <input id="auth-pw" class="auth-input" type="password" placeholder="Enter password"
+           onkeydown="if(event.key==='Enter') checkAuth()" autocomplete="current-password" />
+    <button class="auth-btn" id="auth-btn" onclick="checkAuth()">Open Dashboard →</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+  <div class="auth-footer"><strong>Research Solutions</strong> &nbsp;·&nbsp; Inflation Project &nbsp;·&nbsp; www.rs.org.pk</div>
+</div>
+
+<div id="loading"><div class="spinner"></div><div id="loading-txt">Loading dashboard…</div></div>
+
+<div id="site-content" style="display:none">
+<!-- ===================== HEADER ===================== -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="header-logo-wrap">
+        <img src="https://www.rs.org.pk/wp-content/uploads/2021/05/RS-Logo-White.png" alt="Research Solutions"
+             onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
+        <div id="logo-fallback" style="display:none; align-items:center; gap:10px;">
+          <div style="width:40px;height:40px;background:var(--rs-red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;">🔍</div>
+          <div>
+            <div style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;">Research Solutions</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.8px;text-transform:uppercase;">M&amp;A Research Solutions LLC</div>
+          </div>
+        </div>
+      </div>
+      <div class="header-study">
+        <div class="header-study-title">Inflation Project <span class="demo-chip" id="demo-chip" style="display:none">Dummy Data</span></div>
+        <div class="header-study-sub">Pre-Baseline Surveys · Firm Inflation Expectations</div>
+      </div>
+      <div class="header-meta">
+        <strong>Pakistan · Lahore · Allama Iqbal Town</strong><br>
+        <span id="meta-line">—</span><br>
+        <span class="header-pill" id="meta-pill">—</span>
+        <br><button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle light / dark theme"><span id="themeIcon">🌙</span> <span id="themeTxt">Dark</span></button>
+      </div>
+    </div>
+    <nav class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-p="overview" onclick="showPanel('overview',this)">📊 Overview</button>
+      <button class="nav-tab" data-p="ops" onclick="showPanel('ops',this)">🛠️ Field Progress</button>
+      <button class="nav-tab" data-p="prof" onclick="showPanel('prof',this)">🏪 Shop &amp; Manager Profile</button>
+      <button class="nav-tab" data-p="exp" onclick="showPanel('exp',this)">📈 Inflation Expectations</button>
+      <button class="nav-tab" data-p="mod1" data-sv="1" onclick="showPanel('mod1',this)">🧠 Understanding &amp; Decisions<span class="sv-tag">PB1</span></button>
+      <button class="nav-tab" data-p="mod2" data-sv="2" onclick="showPanel('mod2',this)">🔗 Communication Network<span class="sv-tag">PB2</span></button>
+      <button class="nav-tab" data-p="trk" onclick="showPanel('trk',this)">🗺️ Block Tracker &amp; Data</button>
+    </nav>
+  </div>
+</div>
+
+<div class="live-banner">
+  <span class="live-dot"></span>
+  <span class="live-pill" id="banner-kind">—</span>
+  <span id="banner-text">—</span>
+  <span class="live-pill" id="banner-pill">—</span>
+</div>
+
+<!-- ===================== MAIN ===================== -->
+<div class="main">
+
+  <!-- ---------- CONTROLS ---------- -->
+  <div class="controls" id="controls">
+    <div class="controls-top">
+      <div class="seg-wrap">
+        <span class="seg-label">Survey</span>
+        <div class="seg" id="survey-seg" role="group" aria-label="Choose survey">
+          <button data-s="1" class="active" onclick="setSurvey(1)">Pre-Baseline 1</button>
+          <button data-s="2" onclick="setSurvey(2)">Pre-Baseline 2</button>
+        </div>
+      </div>
+      <div class="ctl-actions">
+        <button class="btn filters-toggle" id="filters-toggle" onclick="toggleFilters()">⚙ Filters</button>
+        <button class="btn ghost" onclick="resetFilters()">↺ Reset filters</button>
+        <button class="btn" onclick="exportExcel()" title="Download the current view as an Excel workbook">⬇ Excel</button>
+        <button class="btn" onclick="exportPDF()" title="Print or save the dashboard as PDF">🖨 PDF</button>
+      </div>
+    </div>
+    <div class="filters" id="filters">
+      <div class="filter" id="f-block"><label for="flt-block">Location (block)</label><select id="flt-block" onchange="onFilter('block',this.value)"></select></div>
+      <div class="filter" id="f-shop"><label for="flt-shop">Shop type</label><select id="flt-shop" onchange="onFilter('shop',this.value)"></select></div>
+      <div class="filter" id="f-edu"><label for="flt-edu">Manager education</label><select id="flt-edu" onchange="onFilter('edu',this.value)"></select></div>
+      <div class="filter" id="f-age"><label for="flt-age">Manager age group</label><select id="flt-age" onchange="onFilter('age',this.value)"></select></div>
+      <div class="filter" id="f-en"><label for="flt-en">Enumerator</label><select id="flt-en" onchange="onFilter('en',this.value)"></select></div>
+      <div class="filter" id="f-from"><label for="flt-from">Date from</label><input type="date" id="flt-from" onchange="onFilter('from',this.value)"></div>
+      <div class="filter" id="f-to"><label for="flt-to">Date to</label><input type="date" id="flt-to" onchange="onFilter('to',this.value)"></div>
+    </div>
+    <div class="sample-note" id="sample-note"></div>
+  </div>
+
+  <div id="no-data"></div>
+  <div class="print-only" id="print-head"></div>
+
+  <!-- ---------- OVERVIEW ---------- -->
+  <div class="panel active" id="panel-overview">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 01</div>
+        <h2>Survey at a Glance</h2>
+        <p>Headline status of the selected pre-baseline survey: interviews completed against target, the outcome of every shop visit, and the average 12-month inflation expectation of shop managers in Allama Iqbal Town, Lahore. Use the survey toggle and filters above to change the view.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="ov-kpis"></div>
+    <div class="callout-row" id="ov-callouts"></div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card full">
+        <h3>Daily Completed Interviews</h3>
+        <div class="chart-desc">Completed interviews per field day, with a 3-day rolling average</div>
+        <div class="chart-wrap"><canvas id="chartDaily"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card">
+        <h3>Progress vs Target</h3>
+        <div class="chart-desc">Completed interviews against the sample target (location filter applies; profile filters do not)</div>
+        <div class="chart-wrap"><canvas id="chartProgress"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Completed by Shop Type</h3>
+        <div class="chart-desc">Share of completed interviews by type of shop</div>
+        <div class="chart-wrap"><canvas id="chartShop"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Visit Outcomes</h3>
+        <div class="chart-desc">Result of every shop visit recorded so far</div>
+        <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <h3>Completed Interviews by Block</h3>
+        <div class="chart-desc">Completed (solid) against the remaining block target (shaded), labelled as completed / target with completion rate</div>
+        <div class="chart-wrap auto"><canvas id="chartBlock"></canvas></div>
+      </div>
+    </div>
+    <div class="tbl-block">
+      <div class="tbl-title">Pre-Baseline 1 vs Pre-Baseline 2</div>
+      <div class="tbl-desc">Side-by-side summary of both surveys. Location, enumerator, date and profile filters apply to both columns.</div>
+      <div class="mz-table-wrap"><div class="mz-scroll" style="max-height:none"><table class="mz-table" id="cmp-table"></table></div></div>
+    </div>
+    <p class="footnote">Target = shops in the sampling frame flagged as the primary sample (sample_role&nbsp;=&nbsp;1); replacement shops are visited only when a primary shop cannot be interviewed. Completed = interview finished with the manager's consent. Expectations outside the valid range are excluded from averages.</p>
+  </div>
+
+  <!-- ---------- FIELD PROGRESS ---------- -->
+  <div class="panel" id="panel-ops">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 02</div>
+        <h2>Field Progress</h2>
+        <p>How collection is going: cumulative progress against the target, output by enumerator, and interview length. Location, enumerator and date filters apply here; manager-profile filters (shop type, education, age) do not, because refusals and non-contacts have no profile.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="op-kpis"></div>
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <h3>Cumulative Completion vs Target</h3>
+        <div class="chart-desc">Running total of completed interviews against the sample target</div>
+        <div class="chart-wrap tall"><canvas id="chartCumulative"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card">
+        <h3>Visit Outcomes by Enumerator</h3>
+        <div class="chart-desc">Stacked count of completed, partial, refused and not-reached visits per field team member</div>
+        <div class="chart-wrap auto"><canvas id="chartEnums"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Interview Duration</h3>
+        <div class="chart-desc">Completed interviews by length in minutes</div>
+        <div class="chart-wrap tall"><canvas id="chartDuration"></canvas></div>
+      </div>
+    </div>
+    <div class="insight-row" id="op-insights"></div>
+    <p class="footnote">Enumerators are shown as anonymised codes. Duration is the elapsed instrument time. The projected finish extrapolates the average daily completion rate observed so far.</p>
+  </div>
+
+  <!-- ---------- PROFILE ---------- -->
+  <div class="panel" id="panel-prof">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 03</div>
+        <h2>Shop &amp; Manager Profile</h2>
+        <p>Who was interviewed: the type, size and age of the shops, and the education, age and experience of their managers. These are the characteristics used to filter every other tab.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="pf-kpis"></div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card"><h3>Shop Type</h3><div class="chart-desc">Share of completed interviews</div><div class="chart-wrap"><canvas id="chartPfShop"></canvas></div></div>
+      <div class="chart-card"><h3>Manager Education</h3><div class="chart-desc">Highest level completed</div><div class="chart-wrap"><canvas id="chartPfEdu"></canvas></div></div>
+      <div class="chart-card"><h3>Manager Age Group</h3><div class="chart-desc">Number of managers per age band</div><div class="chart-wrap"><canvas id="chartPfAge"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Education by Shop Type</h3><div class="chart-desc">Stacked: share of managers at each education level within each shop type</div><div class="chart-wrap tall"><canvas id="chartPfEduShop"></canvas></div></div>
+      <div class="chart-card"><h3>Completed Interviews by Block</h3><div class="chart-desc">Where the interviewed shops are located</div><div class="chart-wrap tall"><canvas id="chartPfBlock"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card"><h3>Employees per Shop</h3><div class="chart-desc">Excluding the manager</div><div class="chart-wrap"><canvas id="chartPfEmp"></canvas></div></div>
+      <div class="chart-card"><h3>Years in Operation</h3><div class="chart-desc">Age of the shop</div><div class="chart-wrap"><canvas id="chartPfFirmAge"></canvas></div></div>
+      <div class="chart-card"><h3>Shop Floor Area</h3><div class="chart-desc">Square metres</div><div class="chart-wrap"><canvas id="chartPfArea"></canvas></div></div>
+    </div>
+    <p class="footnote">Education and age are reported by the manager. Shop type is recorded by the enumerator at the shop front. Only completed interviews are included.</p>
+  </div>
+
+  <!-- ---------- EXPECTATIONS ---------- -->
+  <div class="panel" id="panel-exp">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 04</div>
+        <h2>Inflation Expectations</h2>
+        <p>What shop managers expect inflation in Pakistan to be over the next twelve months — the overall distribution, how it differs by shop type, education, age and block, and (in Pre-Baseline&nbsp;1) how expectations moved after managers were given official information.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="ex-kpis"></div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Distribution of Expected Inflation</h3><div class="chart-desc">Number of managers by expected 12-month inflation band</div><div class="chart-wrap tall"><canvas id="chartExDist"></canvas></div></div>
+      <div class="chart-card"><h3>Expectation Bands by Education</h3><div class="chart-desc">Stacked: share of managers in each expectation band, within each education level</div><div class="chart-wrap tall"><canvas id="chartExBandEdu"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card"><h3>Average by Shop Type</h3><div class="chart-desc">Mean expected inflation (%)</div><div class="chart-wrap tall"><canvas id="chartExShop"></canvas></div></div>
+      <div class="chart-card"><h3>Average by Education</h3><div class="chart-desc">Mean expected inflation (%)</div><div class="chart-wrap tall"><canvas id="chartExEdu"></canvas></div></div>
+      <div class="chart-card"><h3>Average by Age Group</h3><div class="chart-desc">Mean expected inflation (%)</div><div class="chart-wrap tall"><canvas id="chartExAge"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Average by Block</h3><div class="chart-desc">Mean expected inflation (%), blocks with completed interviews</div><div class="chart-wrap auto"><canvas id="chartExBlock"></canvas></div></div>
+      <div class="chart-card only-1"><h3>Before vs After Official Information</h3><div class="chart-desc">Mean lowest, most-likely and highest inflation expected, before and after managers were told the official forecast (8.4%)</div><div class="chart-wrap tall"><canvas id="chartExPrePost"></canvas></div></div>
+    </div>
+    <p class="footnote" id="ex-foot">Averages are simple means of the manager's point forecast for inflation in Pakistan over the next 12 months (% per year). Group labels show the number of managers (n); read groups with small n with caution.</p>
+  </div>
+
+  <!-- ---------- PB1 MODULE ---------- -->
+  <div class="panel only-1" id="panel-mod1">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 05 · Pre-Baseline 1 · Modules A, C &amp; E</div>
+        <h2>Understanding &amp; Planned Decisions</h2>
+        <p>How well managers understand inflation, which way they say they will adjust prices, wages, borrowing, investment and staffing over the next three months, and how those plans change once they are told the official inflation forecast.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="m1-kpis"></div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card"><h3>Understands “Inflation” (before)</h3><div class="chart-desc">Self-reported understanding of the term</div><div class="chart-wrap"><canvas id="chartUn1"></canvas></div></div>
+      <div class="chart-card"><h3>Understands (after definition)</h3><div class="chart-desc">Re-asked after the definition was read out</div><div class="chart-wrap"><canvas id="chartUn2"></canvas></div></div>
+      <div class="chart-card"><h3>Percentage Calculation Test</h3><div class="chart-desc">“100 Rs rises by 3%” — correct answer is 103</div><div class="chart-wrap"><canvas id="chartCalc"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Easier Way to Describe Inflation</h3><div class="chart-desc">“Inflation is 6%” vs “Rs 100 today costs Rs 106 next year”</div><div class="chart-wrap"><canvas id="chartFraming"></canvas></div></div>
+      <div class="chart-card"><h3>Average Planned Change, Before vs After Information</h3><div class="chart-desc">Mean planned % change over the next 3 months, for each decision</div><div class="chart-wrap auto"><canvas id="chartDecMean"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Direction of Plans — Before Information</h3><div class="chart-desc">Stacked: share of managers planning to decrease, keep or increase</div><div class="chart-wrap auto"><canvas id="chartDecPre"></canvas></div></div>
+      <div class="chart-card"><h3>Direction of Plans — After Information</h3><div class="chart-desc">Same decisions after being told inflation is expected to be 8.4%</div><div class="chart-wrap auto"><canvas id="chartDecPost"></canvas></div></div>
+    </div>
+    <p class="footnote">Planned changes are % change versus the current level over the next 3 months (0 = no change). Employee counts and hours are as stated by the manager. Extreme values (beyond ±100%) are excluded from averages.</p>
+  </div>
+
+  <!-- ---------- PB2 MODULE ---------- -->
+  <div class="panel only-2" id="panel-mod2">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 05 · Pre-Baseline 2 · Module B</div>
+        <h2>Communication Network</h2>
+        <p>Where managers get their inflation information, how often and how far they talk to other firms in the bazaar, and what makes a conversation memorable — a picture of how inflation information travels between shops.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="m2-kpis"></div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Importance of Information Sources</h3><div class="chart-desc">Mean rating, 0 (not relevant) to 10 (very important)</div><div class="chart-wrap tall"><canvas id="chartSrc"></canvas></div></div>
+      <div class="chart-card"><h3>Other Firms Spoken To (3 months)</h3><div class="chart-desc">Number of managers by count of firms they discussed inflation with</div><div class="chart-wrap tall"><canvas id="chartNF"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card"><h3>How Far Away Are These Firms?</h3><div class="chart-desc">Among managers who spoke with at least one firm</div><div class="chart-wrap"><canvas id="chartDist"></canvas></div></div>
+      <div class="chart-card"><h3>Memorable Conversation</h3><div class="chart-desc">Recalled a conversation that affected expectations</div><div class="chart-wrap"><canvas id="chartMem"></canvas></div></div>
+      <div class="chart-card"><h3>Social Tie to That Firm</h3><div class="chart-desc">Among memorable conversations</div><div class="chart-wrap"><canvas id="chartSoc"></canvas></div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card full"><h3>How Often Managers Talk With Other Firms</h3><div class="chart-desc">Stacked: share of managers by frequency of conversation, for each topic (last 3 months)</div><div class="chart-wrap tall"><canvas id="chartFreq"></canvas></div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card full"><h3>What Happened in the Memorable Conversation</h3><div class="chart-desc">Stacked: yes / maybe / no / don't know for each statement</div><div class="chart-wrap tall"><canvas id="chartMq"></canvas></div></div>
+    </div>
+    <div class="chart-grid cols-3">
+      <div class="chart-card"><h3>Business Relationship With That Firm</h3><div class="chart-desc">Multiple response — managers selecting each</div><div class="chart-wrap tall"><canvas id="chartRel"></canvas></div></div>
+      <div class="chart-card"><h3>How Long Have They Known the Firm?</h3><div class="chart-desc">Among memorable conversations</div><div class="chart-wrap tall"><canvas id="chartKnown"></canvas></div></div>
+      <div class="chart-card"><h3>Who Should Spread the Message?</h3><div class="chart-desc">Key attribute of the firm managers would pick to spread inflation information (multiple response)</div><div class="chart-wrap tall"><canvas id="chartAttr"></canvas></div></div>
+    </div>
+    <p class="footnote">Source ratings are means on the 0–10 scale. Conversation details are asked only of managers who recalled a memorable conversation, so those bases are smaller than the full completed sample.</p>
+  </div>
+
+  <!-- ---------- TRACKER ---------- -->
+  <div class="panel" id="panel-trk">
+    <div class="section-header">
+      <div class="section-header-accent"></div>
+      <div>
+        <div class="eyebrow">Section 06 · Operational tracker</div>
+        <h2>Block Tracker &amp; Data</h2>
+        <p>Completion status for every block in the sampling frame, plus a de-identified log of every shop visit. Search, click any column header to sort, and export either table to CSV. Manager-profile filters apply to the interview log only.</p>
+      </div>
+    </div>
+    <div class="kpi-grid" id="tk-kpis"></div>
+    <div class="land-prog-head">📐 Progress by Survey</div>
+    <div class="land-prog" id="tk-cards" style="grid-template-columns:repeat(2,1fr)"></div>
+
+    <div class="tbl-block" style="margin-top:28px">
+      <div class="tbl-title">Block Completion Tracker</div>
+      <div class="tbl-desc">Completed interviews against the primary-sample target in each block.</div>
+      <div class="mz-toolbar">
+        <input type="text" id="blk-search" class="mz-search" placeholder="🔍  Search block…" oninput="renderTable('blk')">
+        <select id="blk-status" class="mz-filter" onchange="renderTable('blk')">
+          <option value="all">All blocks</option><option value="Completed">Completed</option>
+          <option value="In Progress">In Progress</option><option value="Not Started">Not Started</option>
+        </select>
+        <button class="mz-export" onclick="exportTableCSV('blk')">⬇ Export CSV</button>
+        <span class="mz-count" id="blk-count"></span>
+      </div>
+      <div class="mz-table-wrap"><div class="mz-scroll"><table class="mz-table" id="blk-table"><thead></thead><tbody></tbody></table></div></div>
+    </div>
+
+    <div class="tbl-block">
+      <div class="tbl-title">Interview Log (de-identified)</div>
+      <div class="tbl-desc">One row per shop visit. No names, phone numbers, shop names or GPS are shown.</div>
+      <div class="mz-toolbar">
+        <input type="text" id="log-search" class="mz-search" placeholder="🔍  Search block, shop type, enumerator…" oninput="renderTable('log')">
+        <select id="log-outcome" class="mz-filter" onchange="renderTable('log')"></select>
+        <button class="mz-export" onclick="exportTableCSV('log')">⬇ Export CSV</button>
+        <span class="mz-count" id="log-count"></span>
+      </div>
+      <div class="mz-table-wrap"><div class="mz-scroll"><table class="mz-table" id="log-table"><thead></thead><tbody></tbody></table></div></div>
+    </div>
+    <p class="footnote">Completion % = completed ÷ block target. Blocks with no primary-sample target (replacement shops only) show “—”. The interview log reflects the survey, location, enumerator, date and profile filters currently selected.</p>
+  </div>
+
+</div><!-- /main -->
+
+<div class="page-footer">
+  <strong>Inflation Project — Pre-Baseline Dashboard</strong> &nbsp;·&nbsp; <span id="footer-kind">—</span><br>
+  Research Solutions (M&amp;A Research Solutions LLC) &nbsp;·&nbsp;
+  <strong>www.rs.org.pk</strong> &nbsp;·&nbsp;
+  Lahore, Pakistan &nbsp;·&nbsp; <span id="footer-updated">—</span>
+</div>
+</div><!-- /site-content -->
+
+<script>
+// ============================================================
+//  PAYLOAD  —  public metadata + AES-256-GCM encrypted data
+//  (filled in by build_dashboard.py; unreadable without the password)
+// ============================================================
+const PUBLIC = __PUBLIC__;
+const ENC = __PAYLOAD__;
+
+const $ = id => document.getElementById(id);
+let DB = null;                                   // decrypted payload {meta, records, lists}
+const BLANK = { survey:1, block:'all', shop:'all', edu:'all', age:'all', en:'all', from:'', to:'' };
+let STATE = Object.assign({}, BLANK);
+
+// ============================================================
+//  ACCESS GATE  (password decrypts the data — see build_dashboard.py)
+// ============================================================
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decryptPayload(pw){
+  if(!(window.crypto && crypto.subtle)) throw new Error('SECURE_CONTEXT');
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(ENC.salt), iterations:ENC.it, hash:'SHA-256'},
+                                            km, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(ENC.iv)}, key, b64(ENC.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function showLoading(on, txt){ $('loading').classList.toggle('show', on); if(txt) $('loading-txt').textContent = txt; }
+
+async function checkAuth(pwOverride){
+  const input = $('auth-pw'), err = $('auth-error');
+  const pw = typeof pwOverride === 'string' ? pwOverride : input.value;
+  if(!pw){ err.textContent = 'Please enter the password.'; return; }
+  $('auth-btn').disabled = true; err.textContent = '';
+  showLoading(true, 'Unlocking and loading data…');
+  try{
+    DB = await decryptPayload(pw);
+  }catch(e){
+    showLoading(false); $('auth-btn').disabled = false;
+    try { sessionStorage.removeItem('ip_pw'); } catch(_){}
+    if(e && e.message === 'SECURE_CONTEXT') err.textContent = 'This page must be opened over https:// (or locally) to unlock.';
+    else { err.textContent = 'Incorrect password. Please try again.'; input.classList.add('error'); input.value=''; input.focus(); setTimeout(()=>input.classList.remove('error'),400); }
+    return;
+  }
+  try { sessionStorage.setItem('ip_pw', pw); } catch(_){}
+  $('auth-btn').disabled = false;
+  try{ await boot(); }
+  catch(e){ console.error(e); showLoading(false); $('auth-gate').style.display='none'; $('site-content').style.display='block';
+    $('no-data').innerHTML = '<div class="banner-card err"><h4>Dashboard could not be displayed</h4>' + (e.message||e) + '. Please refresh the page; if it persists contact Research Solutions.</div>'; }
+}
+window.addEventListener('DOMContentLoaded', ()=>{
+  $('auth-demo').style.display = PUBLIC.is_dummy ? 'inline-block' : 'none';
+  let pw = null; try { pw = sessionStorage.getItem('ip_pw'); } catch(_){}
+  if(pw) checkAuth(pw);
+});
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  $('panel-' + id).classList.add('active');
+  (btn || document.querySelector(`.nav-tab[data-p="${id}"]`)).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  drawPanel(id);
+}
+function activePanelId(){ const a = document.querySelector('.panel.active'); return a ? a.id.replace('panel-','') : 'overview'; }
+
+// ============================================================
+//  THEME
+// ============================================================
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  const dark = t === 'dark';
+  const i = $('themeIcon'), x = $('themeTxt');
+  if (i) i.textContent = dark ? '☀️' : '🌙';
+  if (x) x.textContent = dark ? 'Light' : 'Dark';
+  try { localStorage.setItem('ip_theme', t); } catch(e){}
+}
+function toggleTheme(){
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  if (DB) redrawAll();
+}
+(function initTheme(){
+  let t = null;
+  try { t = localStorage.getItem('ip_theme'); } catch(e){}
+  if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(t);
+})();
+
+// ============================================================
+//  CHART FOUNDATION
+// ============================================================
+const CV = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NAVY = '#2D3450';
+const S = i => CV('--series-' + i);
+const PALETTE = () => [S(1),S(2),S(3),S(4),S(5),S(6),S(7),S(8)];
+const TXT   = () => CV('--text-2') || '#475569';
+const GRID  = () => CV('--grid')   || '#eef1f6';
+const MUTED = () => CV('--muted-fill') || '#e2e8f0';
+const FONT  = { family:'Inter' };
+
+function baseOpts(extra){
+  return Object.assign({
+    responsive:true, maintainAspectRatio:false,
+    animation:{ duration:600 },
+    plugins:{
+      legend:{ labels:{ font:FONT, color:TXT(), boxWidth:14 } },
+      datalabels:{ display:false },
+      tooltip:{ backgroundColor:'rgba(30,36,56,.94)', titleFont:{family:'Inter',size:12,weight:'700'},
+                bodyFont:{family:'Inter',size:12}, padding:10, cornerRadius:8, displayColors:true, boxPadding:4 }
+    }
+  }, extra||{});
+}
+
+const L = a => a.map(x=>x.label);
+const V = a => a.map(x=>x.value);
+const SUM = a => a.reduce((s,x)=>s+x.value,0);
+const PCT = a => { const t=SUM(a)||1; return a.map(x=>({label:x.label, value:Math.round(100*x.value/t)})); };
+function pctOf(a,b){ return b ? Math.round(100*a/b) : 0; }
+
+function wrapTick(label, max){
+  max = max || 18;
+  const words = String(label).split(/\s+/), lines = []; let line='';
+  for(const w of words){
+    if(line && (line+' '+w).length > max){ lines.push(line); line=w; }
+    else line = line ? line+' '+w : w;
+  }
+  if(line) lines.push(line);
+  return lines.length ? lines : [String(label)];
+}
+
+/* Empty-state handling: every chart asks has() first.  If there is nothing to draw
+   the canvas is replaced by a friendly message instead of a blank or broken chart. */
+function has(id, arr){
+  const el = $(id); if(!el) return false;
+  const wrap = el.closest('.chart-wrap');
+  const empty = !arr || !arr.length || arr.every(x => !((x && (x.value ?? x.count)) || 0));
+  const prev = Chart.getChart(el);
+  let msg = wrap.querySelector('.empty-state');
+  if(empty){
+    if(prev) prev.destroy();
+    wrap.classList.add('is-empty');
+    if(wrap.classList.contains('auto')) wrap.style.height = '200px';
+    if(!msg){ msg = document.createElement('div'); msg.className = 'empty-state';
+      msg.innerHTML = '<div class="es-ico">📭</div><div><b>No data for this selection</b></div><div>Try widening the filters or choosing another survey.</div>';
+      wrap.appendChild(msg); }
+  } else {
+    wrap.classList.remove('is-empty'); if(msg) msg.remove();
+  }
+  return !empty;
+}
+function mk(id, cfg){
+  const el = $(id); if(!el) return null;
+  const prev = Chart.getChart(el); if(prev) prev.destroy();
+  const chart = new Chart(el, cfg);
+  attachDownload(el, id);
+  return chart;
+}
+function attachDownload(canvas, id){
+  const card = canvas.closest('.chart-card');
+  if(!card || card.querySelector('.card-dl')) return;
+  const btn = document.createElement('button');
+  btn.className = 'card-dl'; btn.type = 'button';
+  btn.title = 'Download this chart as PNG'; btn.setAttribute('aria-label','Download this chart as PNG');
+  btn.textContent = '⤓';
+  btn.onclick = () => {
+    const c = Chart.getChart(canvas); if(!c) return;
+    const out = document.createElement('canvas');
+    out.width = c.canvas.width; out.height = c.canvas.height;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = CV('--surface') || '#fff'; ctx.fillRect(0,0,out.width,out.height);
+    ctx.drawImage(c.canvas,0,0);
+    const a = document.createElement('a');
+    a.href = out.toDataURL('image/png'); a.download = 'inflation-dashboard_' + id + '.png'; a.click();
+  };
+  card.appendChild(btn);
+}
+function fitHeight(id, n, per, pad){
+  const wrap = $(id).closest('.chart-wrap');
+  if(wrap) wrap.style.height = (n * (per||32) + (pad||56)) + 'px';
+}
+
+// ============================================================
+//  CHART TYPES
+// ============================================================
+function barChart(id, arr, color, horizontal, suffix){
+  if(!has(id, arr)) return;
+  const sfx = suffix||'';
+  const catWrap = horizontal ? 20 : 10;
+  const catTicks = {font:{family:'Inter',size:11},color:TXT(),autoSkip:false,maxRotation:0,minRotation:0,
+                    callback:function(v){ return wrapTick(this.getLabelForValue(v), catWrap); }};
+  const valTicks = {font:{family:'Inter',size:11},color:TXT(),callback:sfx?(v=>v+sfx):undefined};
+  if(horizontal) fitHeight(id, arr.length, 34, 44);
+  mk(id,{type:'bar',
+    data:{labels:L(arr), datasets:[{data:V(arr), backgroundColor:color, borderRadius:6, maxBarThickness:46}]},
+    options:baseOpts({ indexAxis: horizontal?'y':'x',
+      layout:{padding:{top:horizontal?8:18, right:horizontal?34:8}},
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>' '+c.raw+sfx}},
+        datalabels:{display:true, anchor:'end', align:horizontal?'right':'top', clamp:true, clip:false,
+                    color:TXT(), font:{family:'Inter',size:11,weight:'700'}, formatter:v=>v+sfx}},
+      scales:{ x:{ticks: horizontal?valTicks:catTicks, grid:{display:!horizontal,color:GRID()}, border:{display:false}, ...(horizontal?{beginAtZero:true,grace:'14%'}:{})},
+               y:{ticks: horizontal?catTicks:valTicks, grid:{display:!horizontal,color:GRID()}, border:{display:false}, beginAtZero:true, ...(horizontal?{}:{grace:'14%'})}} }) });
+}
+
+/* Horizontal bar with completed vs remaining target (block progress). */
+function progressBars(id, rows){
+  if(!has(id, rows.map(r=>({value:r.target+r.done})))) return;
+  fitHeight(id, rows.length, 34, 60);
+  mk(id,{type:'bar',
+    data:{labels:rows.map(c=>c.label), datasets:[
+      {label:'Completed', data:rows.map(c=>c.done), backgroundColor:S(1), borderRadius:{topLeft:0,bottomLeft:0,topRight:4,bottomRight:4}, maxBarThickness:22, stack:'s'},
+      {label:'Remaining', data:rows.map(c=>Math.max(c.target-c.done,0)), backgroundColor:MUTED(), borderRadius:4, maxBarThickness:22, stack:'s'}
+    ]},
+    options:baseOpts({ indexAxis:'y',
+      layout:{padding:{top:2, right:104}},
+      plugins:{
+        legend:{position:'top', align:'end', labels:{font:FONT, color:TXT(), boxWidth:12, padding:12}},
+        datalabels:{ display:ctx=>ctx.datasetIndex===1, anchor:'end', align:'right', clamp:true, clip:false,
+          color:TXT(), font:{family:'Inter',size:11,weight:'700'},
+          formatter:(v,ctx)=>{ const c=rows[ctx.dataIndex]; return c.target ? c.done+' / '+c.target+'  ·  '+pctOf(c.done,c.target)+'%' : c.done+' done'; }},
+        tooltip:{callbacks:{label:ctx=>{ const c=rows[ctx.dataIndex];
+          return ctx.datasetIndex===0 ? ' Completed: '+c.done : ' Remaining: '+Math.max(c.target-c.done,0)+' of '+c.target; }}}},
+      scales:{ x:{stacked:true, beginAtZero:true, grace:'2%', ticks:{font:{family:'Inter',size:11},color:TXT()}, grid:{color:GRID()}, border:{display:false}},
+               y:{stacked:true, ticks:{font:{family:'Inter',size:11.5,weight:'600'},color:TXT(),autoSkip:false,maxRotation:0,minRotation:0}, grid:{display:false}, border:{display:false}}}})});
+}
+
+function donutChart(id, arr, colors){
+  if(!has(id, arr)) return;
+  mk(id,{type:'doughnut',
+    data:{labels:L(arr), datasets:[{data:V(arr), backgroundColor:colors||PALETTE(), borderWidth:2, borderColor:CV('--surface')||'#fff'}]},
+    options:baseOpts({ cutout:'58%',
+      plugins:{ legend:{position:'right',labels:{font:FONT,color:TXT(),boxWidth:12,padding:10}},
+        tooltip:{callbacks:{label:c=>{ const t=c.dataset.data.reduce((a,b)=>a+b,0)||1; return ' '+c.label+': '+c.raw.toLocaleString()+' ('+Math.round(100*c.raw/t)+'%)'; }}},
+        datalabels:{display:true,color:'#fff',font:{family:'Inter',size:12,weight:'700'},
+          formatter:(v,c)=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);const p=t?Math.round(100*v/t):0;return p>=6? p+'%':'';}} } }) });
+}
+
+function lineChart(id, arr){
+  if(!has(id, arr.map(x=>({value:x.count})))) return;
+  const vals = arr.map(x=>x.count);
+  const roll = vals.map((_,i)=>{ const s=Math.max(0,i-2), w=vals.slice(s,i+1); return +(w.reduce((a,b)=>a+b,0)/w.length).toFixed(1); });
+  mk(id,{type:'line',
+    data:{labels:arr.map(x=>fmtD(x.date)), datasets:[
+      {label:'Completed', data:vals, borderColor:S(2), backgroundColor:'rgba(232,25,44,.10)', fill:true, tension:.3,
+       pointBackgroundColor:S(2), pointRadius:4, pointHoverRadius:6, borderWidth:2.5, order:2},
+      {label:'3-day average', data:roll, borderColor:S(1), borderDash:[6,5], borderWidth:2, pointRadius:0, fill:false, tension:.35, order:1}
+    ]},
+    options:baseOpts({
+      layout:{padding:{top:22}},
+      plugins:{legend:{position:'top',align:'end',labels:{font:FONT,color:TXT(),boxWidth:14,padding:12}},
+        datalabels:{display:c=>c.datasetIndex===0,anchor:'end',align:'top',color:TXT(),font:{family:'Inter',size:10.5,weight:'700'}}},
+      scales:{x:{ticks:{font:{family:'Inter',size:11},color:TXT()},grid:{display:false},border:{display:false}},
+              y:{beginAtZero:true,grace:'14%',ticks:{font:{family:'Inter',size:11},color:TXT(),precision:0},grid:{color:GRID()},border:{display:false}}}})});
+}
+
+function cumulativeChart(id, arr, target){
+  if(!has(id, arr.map(x=>({value:x.count})))) return;
+  let run = 0;
+  const cum = arr.map(x=>(run+=x.count));
+  const tgt = target || 0;
+  mk(id,{type:'line',
+    data:{labels:arr.map(x=>fmtD(x.date)), datasets:[
+      {label:'Cumulative completed', data:cum, borderColor:S(6), backgroundColor:'rgba(22,163,74,.12)', fill:true,
+       tension:.25, pointBackgroundColor:S(6), pointRadius:3, pointHoverRadius:6, borderWidth:2.5},
+      ...(tgt ? [{label:'Sample target', data:arr.map(()=>tgt), borderColor:S(2), borderDash:[7,5], borderWidth:2, pointRadius:0, fill:false}] : [])
+    ]},
+    options:baseOpts({
+      layout:{padding:{top:18}},
+      plugins:{legend:{position:'top',align:'end',labels:{font:FONT,color:TXT(),boxWidth:14,padding:12}},
+        datalabels:{display:c=>c.datasetIndex===0 && c.dataIndex===cum.length-1, anchor:'end', align:'top', clamp:true, clip:false,
+                    color:TXT(), font:{family:'Inter',size:12,weight:'800'}, formatter:v=>v.toLocaleString()},
+        tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.raw.toLocaleString(),
+          footer:items=> tgt ? pctOf(items[0].raw, tgt)+'% of target' : ''}}},
+      scales:{x:{ticks:{font:{family:'Inter',size:11},color:TXT()},grid:{display:false},border:{display:false}},
+              y:{beginAtZero:true, suggestedMax:tgt ? tgt*1.08 : undefined,
+                 ticks:{font:{family:'Inter',size:11},color:TXT(),callback:v=>v.toLocaleString(),precision:0},
+                 grid:{color:GRID()},border:{display:false}}}})});
+}
+
+function progressDonut(id, done, target){
+  if(!has(id, [{value:Math.max(done,target)}])) return;
+  const rem = Math.max(target-done,0);
+  mk(id,{type:'doughnut',
+    data:{labels:['Completed','Remaining'], datasets:[{data:[done,rem], backgroundColor:[S(6), MUTED()], borderWidth:0}]},
+    options:baseOpts({cutout:'72%',
+      plugins:{legend:{position:'bottom',labels:{font:FONT,color:TXT(),boxWidth:12}},
+        datalabels:{display:false},
+        tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw.toLocaleString()}}}}),
+    plugins:[{id:'center', afterDraw(c){
+      const {ctx, chartArea} = c; if(!chartArea) return;
+      ctx.save();
+      const x=(chartArea.left+chartArea.right)/2, y=(chartArea.top+chartArea.bottom)/2;
+      ctx.textAlign='center';
+      ctx.fillStyle=CV('--text')||NAVY; ctx.font='800 26px Inter';
+      ctx.fillText(pctOf(done,target)+'%', x, y-2);
+      ctx.fillStyle=CV('--text-3')||'#94a3b8'; ctx.font='600 11px Inter';
+      ctx.fillText(done.toLocaleString()+' / '+target.toLocaleString(), x, y+18);
+      ctx.restore();
+    }}]});
+}
+
+/* Grouped (side-by-side) bars. series = [{name,data,color}], suffix like '%' */
+function groupedBar(id, labels, series, suffix, horizontal){
+  const sfx = suffix||'';
+  if(!has(id, series.flatMap(s=>s.data.map(v=>({value:v||0}))))) return;
+  if(horizontal) fitHeight(id, labels.length * series.length, 17, 70);
+  mk(id,{type:'bar',
+    data:{labels:labels, datasets:series.map(s=>({label:s.name, data:s.data, backgroundColor:s.color, borderRadius:5, maxBarThickness:horizontal?16:38}))},
+    options:baseOpts({ indexAxis: horizontal?'y':'x',
+      layout:{padding:{top:20,right:horizontal?30:0}},
+      plugins:{legend:{position:'top',labels:{font:FONT,color:TXT(),boxWidth:14}},
+        tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.raw+sfx}},
+        datalabels:{display:true,anchor:'end',align:horizontal?'right':'top',clamp:true,clip:false,color:TXT(),font:{family:'Inter',size:10.5,weight:'700'},formatter:v=>v==null?'':v+sfx}},
+      scales:{ [horizontal?'y':'x']:{ticks:{font:{family:'Inter',size:11},color:TXT(),autoSkip:false,maxRotation:0,minRotation:0,callback:function(v){return wrapTick(this.getLabelForValue(v),horizontal?22:16);}},grid:{display:false},border:{display:false}},
+               [horizontal?'x':'y']:{beginAtZero:true,grace:'12%',ticks:{font:{family:'Inter',size:11},color:TXT(),callback:v=>v+sfx},grid:{color:GRID()},border:{display:false}}}})});
+}
+
+/* 100 % stacked bars.  cats = [label], series = [{name, data:[pct per cat], color}] */
+function stackedChart(id, cats, series, horizontal){
+  if(!has(id, cats.map((c,i)=>({value:series.reduce((s,x)=>s+(x.data[i]||0),0)})))) return;
+  if(horizontal) fitHeight(id, cats.length, 36, 80);
+  mk(id,{type:'bar',
+    data:{labels:cats, datasets:series.map(s=>({label:s.name, data:s.data, backgroundColor:s.color, borderWidth:1, borderColor:CV('--surface')||'#fff', maxBarThickness:30}))},
+    options:baseOpts({ indexAxis: horizontal?'y':'x',
+      plugins:{legend:{position:'top',labels:{font:FONT,color:TXT(),boxWidth:12,padding:10}},
+        tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.raw+'%'}},
+        datalabels:{display:c=>(c.dataset.data[c.dataIndex]||0)>=9, color:'#fff', font:{family:'Inter',size:10.5,weight:'700'}, formatter:v=>v+'%'}},
+      scales:{ [horizontal?'y':'x']:{stacked:true,ticks:{font:{family:'Inter',size:11},color:TXT(),autoSkip:false,maxRotation:0,minRotation:0,callback:function(v){return wrapTick(this.getLabelForValue(v),horizontal?24:12);}},grid:{display:false},border:{display:false}},
+               [horizontal?'x':'y']:{stacked:true,max:100,beginAtZero:true,ticks:{font:{family:'Inter',size:11},color:TXT(),callback:v=>v+'%'},grid:{color:GRID()},border:{display:false}}}})});
+}
+
+// ============================================================
+//  SMALL STATS HELPERS
+// ============================================================
+const nums = a => a.filter(x => x!=null && !isNaN(x));
+const mean = a => { a = nums(a); return a.length ? a.reduce((s,x)=>s+x,0)/a.length : null; };
+const quant = (a,q) => { a = nums(a).sort((x,y)=>x-y); if(!a.length) return null; const p=(a.length-1)*q, lo=Math.floor(p), hi=Math.ceil(p); return a[lo]+(a[hi]-a[lo])*(p-lo); };
+const median = a => quant(a,.5);
+const r1 = x => x==null ? null : Math.round(x*10)/10;
+const fx = (x, s) => x==null ? '—' : (Math.round(x*10)/10).toLocaleString() + (s||'');
+const share = (num, den) => den ? Math.round(100*num/den) : null;
+const fmtD = d => new Date(d + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+const ev = v => (v!=null && v>=DB.meta.valid_range[0] && v<=DB.meta.valid_range[1]) ? v : null;   // valid inflation value
+const pv = v => (v!=null && v>=-100 && v<=100) ? v : null;                                       // valid % change
+
+function listLabels(name){ return (DB.lists[name]||[]).map(x=>x[1]); }
+function listLabel(name, code){ const f=(DB.lists[name]||[]).find(x=>String(x[0])===String(code)); return f ? f[1] : null; }
+
+/* count by category; `order` fixes category order and keeps empty categories */
+function tally(rs, fn, order){
+  const m = new Map();
+  rs.forEach(r=>{ let k = fn(r); if(k==null||k==='') return; (Array.isArray(k)?k:[k]).forEach(x=>m.set(x,(m.get(x)||0)+1)); });
+  const keys = order ? [...order, ...[...m.keys()].filter(k=>!order.includes(k))]
+                     : [...m.keys()].sort((a,b)=>m.get(b)-m.get(a));
+  return keys.map(k=>({label:String(k), value:m.get(k)||0}));
+}
+/* mean of valFn grouped by keyFn; labels carry n */
+function meanBy(rs, keyFn, valFn, order, minN){
+  const m = new Map();
+  rs.forEach(r=>{ const k=keyFn(r), v=valFn(r); if(k==null||v==null) return; if(!m.has(k)) m.set(k,[]); m.get(k).push(v); });
+  const keys = order ? order.filter(k=>m.has(k)) : [...m.keys()].sort();
+  return keys.filter(k=>m.get(k).length >= (minN||1)).map(k=>({label:`${k} (n=${m.get(k).length})`, value:r1(mean(m.get(k)))}));
+}
+/* 100 % stack: for each category, % of rows in each series bucket */
+function stackPct(rs, catFn, serFn, catOrder, serOrder, colors){
+  const cats = (catOrder || [...new Set(rs.map(catFn).filter(x=>x!=null))]);
+  const used = [], rowsN = [];
+  cats.forEach(c=>{
+    const sub = rs.filter(r=>catFn(r)===c && serFn(r)!=null), n = sub.length;
+    if(!n) return;
+    used.push(c); rowsN.push({n, sub});
+  });
+  return { cats: used.map((c,i)=>`${c} (n=${rowsN[i].n})`),
+           series: serOrder.map((s,j)=>({name:s, color:colors[j % colors.length],
+             data: rowsN.map(x=>Math.round(100*x.sub.filter(r=>serFn(r)===s).length/x.n))})) };
+}
+function bandOf(v, edges, labels){ if(v==null) return null; for(let i=0;i<edges.length;i++) if(v<edges[i]) return labels[i]; return labels[labels.length-1]; }
+
+const EXP_BANDS_E = [1,5,10,15,20,30], EXP_BANDS_L = ['Below 1%','1–4%','5–9%','10–14%','15–19%','20–29%','30%+'];
+const expBand = v => bandOf(v, EXP_BANDS_E, EXP_BANDS_L);
+
+// ============================================================
+//  FILTERS / STATE
+// ============================================================
+const PRED = {
+  prog:  (r,s=STATE) => r.s===s.survey && (s.block==='all' || r.blk===s.block),
+  field: (r,s=STATE) => PRED.prog(r,s) && (s.en==='all' || r.en===s.en) && (!s.from || r.d>=s.from) && (!s.to || r.d<=s.to),
+  full:  (r,s=STATE) => PRED.field(r,s) && (s.shop==='all' || r.st===s.shop) && (s.edu==='all' || r.ed===s.edu) && (s.age==='all' || r.ag===s.age)
+};
+const profileActive = () => STATE.shop!=='all' || STATE.edu!=='all' || STATE.age!=='all';
+const filtersActive = () => ['block','shop','edu','age','en'].some(k=>STATE[k]!=='all') || STATE.from || STATE.to;
+const FLD  = () => DB.records.filter(r=>PRED.field(r));
+const DONE = () => DB.records.filter(r=>PRED.full(r) && r.cm);
+const SURVEY = () => DB.meta.surveys[STATE.survey];
+function targetNow(){
+  const sm = SURVEY();
+  if(STATE.block==='all') return sm.target;
+  return sm.blocks[STATE.block] || 0;
+}
+
+function fillSelect(id, label, values){
+  const el = $(id), cur = el.value;
+  el.innerHTML = `<option value="all">All ${label}</option>` + values.map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}">${v}</option>`).join('');
+  el.value = values.includes(cur) ? cur : 'all';
+}
+function buildFilterOptions(){
+  const rs = DB.records.filter(r=>r.s===STATE.survey);
+  const uniq = k => [...new Set(rs.map(r=>r[k]).filter(x=>x!=null && x!==''))];
+  const blocks = uniq('blk').sort((a,b)=> a==='Other areas'||a==='Not in frame' ? 1 : b==='Other areas'||b==='Not in frame' ? -1 : a.localeCompare(b));
+  fillSelect('flt-block','blocks', blocks);
+  fillSelect('flt-shop','shop types', uniq('st').sort());
+  fillSelect('flt-edu','education levels', listLabels('educ4').filter(l=>uniq('ed').includes(l)));
+  fillSelect('flt-age','age groups', ['18–24','25–34','35–44','45–54','55+'].filter(l=>uniq('ag').includes(l)));
+  fillSelect('flt-en','enumerators', uniq('en').sort());
+  const ds = rs.map(r=>r.d).sort();
+  ['flt-from','flt-to'].forEach(id=>{ $(id).min = ds[0]||''; $(id).max = ds[ds.length-1]||''; });
+  $('flt-from').value = STATE.from; $('flt-to').value = STATE.to;
+  const lbl = {block:'f-block', shop:'f-shop', edu:'f-edu', age:'f-age', en:'f-en'};
+  Object.keys(lbl).forEach(k => $(lbl[k]).classList.toggle('on', STATE[k]!=='all'));
+  $('f-from').classList.toggle('on', !!STATE.from); $('f-to').classList.toggle('on', !!STATE.to);
+}
+function setSurvey(n){
+  if(STATE.survey===n) return;
+  STATE = Object.assign({}, BLANK, {survey:n});
+  syncSurveyUI(); buildFilterOptions(); refresh(true);
+}
+function syncSurveyUI(){
+  document.body.dataset.sv = String(STATE.survey);
+  $('survey-seg').querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.s==String(STATE.survey)));
+  document.querySelectorAll('.nav-tab[data-sv]').forEach(b=>{ b.style.display = b.dataset.sv==String(STATE.survey) ? '' : 'none'; });
+}
+function onFilter(k, v){ STATE[k] = v; buildFilterOptions(); refresh(); }
+function resetFilters(){ STATE = Object.assign({}, BLANK, {survey:STATE.survey}); buildFilterOptions(); refresh(); }
+function toggleFilters(){ $('filters').classList.toggle('open'); }
+
+const FILTER_NAMES = {block:'Block', shop:'Shop type', edu:'Education', age:'Age group', en:'Enumerator', from:'From', to:'To'};
+function renderSampleNote(){
+  const chips = Object.keys(FILTER_NAMES).filter(k => STATE[k] && STATE[k]!=='all')
+    .map(k=>`<button class="chip" onclick="onFilter('${k}', '${k==='from'||k==='to'?'':'all'}')" title="Remove this filter">${FILTER_NAMES[k]}: ${STATE[k]} <span>✕</span></button>`).join('');
+  const n = DONE().length, att = FLD().length;
+  const warn = n>0 && n<10 ? '<span class="warn-pill">⚠ Small sample — read with caution</span>' : '';
+  $('sample-note').innerHTML =
+    `<span><strong>${n.toLocaleString()}</strong> completed interviews shown · <strong>${att.toLocaleString()}</strong> shop visits</span>${warn}` +
+    (chips ? `<span class="chips">${chips}</span>` : '');
+  $('print-head').innerHTML = `<strong>${SURVEY().label}</strong> · ${n} completed interviews · ` +
+    (filtersActive() ? 'Filters: ' + Object.keys(FILTER_NAMES).filter(k=>STATE[k]&&STATE[k]!=='all').map(k=>FILTER_NAMES[k]+' = '+STATE[k]).join('; ') : 'No filters applied') +
+    ` · ${DB.meta.is_dummy ? 'DUMMY DATA' : 'Data as of '+DB.meta.generated}`;
+  const total = DB.records.filter(r=>r.s===STATE.survey).length;
+  $('no-data').innerHTML = total ? '' :
+    `<div class="banner-card"><h4>📭 No ${SURVEY().label} data yet</h4>Interviews will appear here automatically once the first export is placed in the Data folder and the dashboard is refreshed. Targets and the sampling frame are already loaded.</div>`;
+  if(total && !n && !att) $('no-data').innerHTML = `<div class="banner-card"><h4>No interviews match the current filters</h4>Try removing a filter. <button class="btn ghost" style="margin-left:8px" onclick="resetFilters()">Reset filters</button></div>`;
+}
+
+// ============================================================
+//  RENDER ORCHESTRATION
+// ============================================================
+const PANEL_DRAW = { overview:drawOverview, ops:drawOps, prof:drawProf, exp:drawExp, mod1:drawMod1, mod2:drawMod2, trk:drawTrk };
+const drawn = new Set();
+function drawPanel(id){
+  const fn = PANEL_DRAW[id];
+  if(!fn || drawn.has(id)) return;
+  drawn.add(id);
+  fn();
+  animateKpis(id);
+}
+function destroyAllCharts(){ document.querySelectorAll('canvas').forEach(c=>{ const ch=Chart.getChart(c); if(ch) ch.destroy(); }); }
+function redrawAll(){ destroyAllCharts(); drawn.clear(); drawPanel(activePanelId()); }
+function refresh(survey){
+  const panel = document.querySelector('.panel.active');
+  if(panel) panel.classList.add('busy');
+  requestAnimationFrame(()=>{
+    renderSampleNote();
+    updateHeaderMeta();
+    drawn.clear();
+    let id = activePanelId();
+    if((id==='mod1' && STATE.survey!==1) || (id==='mod2' && STATE.survey!==2)){ showPanel('overview'); id='overview'; }
+    else drawPanel(id);
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('busy'));
+  });
+}
+function updateHeaderMeta(){
+  const m = DB.meta;
+  const cnt = s => DB.records.filter(r=>r.s===s && r.cm).length;
+  $('meta-line').textContent = m.last_date ? 'Fieldwork to ' + fmtD(m.last_date) + ' ' + m.last_date.slice(0,4) : 'No fieldwork data yet';
+  $('meta-pill').textContent = `PB1 ${cnt(1)} · PB2 ${cnt(2)} completed`;
+}
+
+async function boot(){
+  if(typeof Chart === 'undefined') throw new Error('The chart library could not be loaded (check your internet connection)');
+  Chart.register(ChartDataLabels);
+  $('auth-gate').style.display = 'none';
+  $('site-content').style.display = 'block';
+  const m = DB.meta;
+  $('demo-chip').style.display = m.is_dummy ? '' : 'none';
+  $('banner-kind').textContent = m.is_dummy ? 'Dummy Data' : 'Live Data';
+  $('banner-text').innerHTML = m.is_dummy
+    ? 'Illustrative figures only — real interview data will replace this automatically. Last built <strong style="color:#fff;">' + m.generated + '</strong>.'
+    : 'Updated daily from the field. Last refreshed <strong style="color:#fff;">' + m.generated + '</strong>.';
+  $('banner-pill').textContent = m.is_dummy ? 'Demo' : 'Live';
+  $('footer-kind').textContent = m.is_dummy ? 'Dummy data — figures are illustrative' : 'Confidential — for client use only';
+  $('footer-updated').textContent = 'Built ' + m.generated;
+  $('survey-seg').querySelectorAll('button').forEach(b=>{ b.textContent = m.surveys[b.dataset.s].label; });
+  const lo = $('log-outcome');
+  lo.innerHTML = '<option value="all">All outcomes</option>' + listLabels('status_survey').map(l=>`<option>${l}</option>`).join('');
+  syncSurveyUI(); buildFilterOptions(); initTables();
+  renderSampleNote(); updateHeaderMeta();
+  drawPanel('overview');
+  showLoading(false);
+}
+
+// ============================================================
+//  KPI BUILDERS
+// ============================================================
+function kpi(icon,value,label,delta,deltaClass,cardClass){
+  return `<div class="kpi-card ${cardClass||''}"><div class="kpi-icon">${icon}</div>
+    <div class="kpi-value">${value}</div><div class="kpi-label">${label}</div>
+    ${delta?`<div class="kpi-delta ${deltaClass||'navy'}">${delta}</div>`:''}</div>`;
+}
+function callout(cls,icon,h,p){
+  return `<div class="callout ${cls}"><div class="callout-icon">${icon}</div><div class="callout-body"><h4>${h}</h4><p>${p}</p></div></div>`;
+}
+function animateKpis(panelId){
+  document.querySelectorAll('#panel-' + panelId + ' .kpi-value').forEach(el=>{
+    const m = el.textContent.match(/^([\d,]+(?:\.\d+)?)(.*)$/);
+    if(!m) return;
+    const target = parseFloat(m[1].replace(/,/g,'')), rest = m[2];
+    if(isNaN(target) || target===0) return;
+    const dec = (m[1].split('.')[1]||'').length;
+    const t0 = performance.now(), dur = 800;
+    (function tick(t){
+      const k = Math.min(((t||performance.now())-t0)/dur, 1), eased = 1-Math.pow(1-k,3);
+      const v = target*eased;
+      el.textContent = (dec ? v.toFixed(dec) : Math.round(v).toLocaleString()) + rest;
+      if(k<1) requestAnimationFrame(tick);
+    })(performance.now());
+  });
+}
+
+// ============================================================
+//  PANEL: OVERVIEW
+// ============================================================
+function dailySeries(rs){
+  const m = new Map(); rs.forEach(r=>{ if(r.d) m.set(r.d,(m.get(r.d)||0)+1); });
+  return [...m.keys()].sort().map(d=>({date:d, count:m.get(d)}));
+}
+function dailyFilled(recsAll, recsDone){
+  const days = [...new Set(recsAll.map(r=>r.d).filter(Boolean))].sort();
+  if(!days.length) return [];
+  const out = [], cnt = new Map(); recsDone.forEach(r=>cnt.set(r.d,(cnt.get(r.d)||0)+1));
+  for(let t=new Date(days[0]+'T00:00:00'); t<=new Date(days[days.length-1]+'T00:00:00'); t.setDate(t.getDate()+1)){
+    const p = n => String(n).padStart(2,'0');
+    const d = t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate()); out.push({date:d, count:cnt.get(d)||0});
+  }
+  return out;
+}
+function surveyStats(s){
+  const st = Object.assign({}, STATE, {survey:s});
+  const fl = DB.records.filter(r=>PRED.field(r,st)), dn = DB.records.filter(r=>PRED.full(r,st) && r.cm);
+  const tg = st.block==='all' ? DB.meta.surveys[s].target : (DB.meta.surveys[s].blocks[st.block]||0);
+  return { fl, dn, target:tg, att:fl.length, n:dn.length,
+           mean:mean(dn.map(r=>ev(r.e1))), med:median(dn.map(r=>ev(r.e1))), dur:median(dn.map(r=>r.dur)),
+           age:mean(dn.map(r=>r.age)), uni:share(dn.filter(r=>r.ed===listLabels('educ4')[3]).length, dn.filter(r=>r.ed).length), emp:mean(dn.map(r=>r.emp)) };
+}
+function drawOverview(){
+  const sm = SURVEY(), T = targetNow(), done = DONE(), fl = FLD();
+  const prog = DB.records.filter(r=>PRED.prog(r) && r.cm).length;
+  const nBlocks = Object.keys(sm.frame_blocks).length;
+  const reached = new Set(done.map(r=>r.blk).filter(b=>b in sm.frame_blocks)).size;
+  const evals = done.map(r=>ev(r.e1));
+  const fCompleted = fl.filter(r=>r.cm).length;
+
+  $('ov-kpis').innerHTML =
+    kpi('✅', done.length.toLocaleString(), 'Completed Interviews', profileActive() ? 'Matching the profile filters' : (T ? pctOf(prog,T)+'% of '+T+' target' : 'No target set'), 'up', 'green') +
+    kpi('🎯', T.toLocaleString(), 'Sample Target', sm.frame_n+' shops in frame', 'navy', 'navy') +
+    kpi('🚪', fl.length.toLocaleString(), 'Shop Visits', share(fCompleted, fl.length)==null ? '—' : share(fCompleted, fl.length)+'% ended in an interview', 'neutral', 'teal') +
+    kpi('📈', fx(mean(evals),'%'), 'Mean Expected Inflation', 'Median ' + fx(median(evals),'%') + ' · next 12 months', 'neutral', '') +
+    kpi('🗺️', reached+' / '+nBlocks, 'Blocks Reached', 'Blocks with ≥1 completed interview', 'navy', 'purple') +
+    kpi('⏱️', fx(median(done.map(r=>r.dur))), 'Median Interview (min)', 'Across '+new Set(fl.map(r=>r.d)).size+' field days', 'up', 'amber');
+
+  const cnt = f => fl.filter(f).length;
+  const refused = cnt(r=>[3,4,5,6].includes(r.oc)), partial = cnt(r=>r.oc===2), nr = cnt(r=>[7,8,9,10].includes(r.oc));
+  $('ov-callouts').innerHTML =
+    callout('teal','✅','Completed', fCompleted+' of '+fl.length+' visits ('+pctOf(fCompleted,fl.length)+'%) produced a full interview.') +
+    callout('amber','🕒','Partial', partial+' interviews were started but not finished.') +
+    callout('primary','🙅','Refused', refused+' managers declined ('+pctOf(refused,fl.length)+'% of visits).') +
+    callout('navy','🚪','Not reached', nr+' visits ended with a closed shop, appointment, ineligible shop or absent manager.');
+
+  lineChart('chartDaily', dailyFilled(fl, done));
+  progressDonut('chartProgress', prog, T);
+  donutChart('chartShop', tally(done, r=>r.st), PALETTE());
+  barChart('chartStatus', tally(fl, r=>r.ou), S(2), true);
+
+  const blocks = new Map();
+  Object.entries(sm.blocks).forEach(([b,t])=>blocks.set(b,{label:b, target:t, done:0}));
+  DB.records.filter(r=>PRED.prog(r) && r.cm).forEach(r=>{ if(!blocks.has(r.blk)) blocks.set(r.blk,{label:r.blk,target:0,done:0}); blocks.get(r.blk).done++; });
+  const rows = [...blocks.values()].filter(b=>STATE.block==='all' || b.label===STATE.block).sort((a,b)=>b.target-a.target || b.done-a.done);
+  progressBars('chartBlock', rows);
+
+  // side-by-side comparison
+  const a = surveyStats(1), b = surveyStats(2);
+  const row = (lab, f) => `<tr><td class="mz-mauza">${lab}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td></tr>`;
+  $('cmp-table').innerHTML =
+    `<thead><tr><th style="cursor:default">Indicator</th><th class="num" style="cursor:default">${DB.meta.surveys[1].label}</th><th class="num" style="cursor:default">${DB.meta.surveys[2].label}</th></tr></thead><tbody>` +
+    row('Completed interviews', s=>s.n) + row('Sample target', s=>s.target) +
+    row('Completion rate', s=>s.target ? pctOf(s.n,s.target)+'%' : '—') + row('Shop visits', s=>s.att) +
+    row('Visits ending in an interview', s=>s.att ? pctOf(s.fl.filter(r=>r.cm).length, s.att)+'%' : '—') +
+    row('Mean expected inflation (12 m)', s=>fx(s.mean,'%')) + row('Median expected inflation (12 m)', s=>fx(s.med,'%')) +
+    row('Median interview length (min)', s=>fx(s.dur)) + row('Mean manager age (years)', s=>fx(s.age)) +
+    row('Managers with a bachelor’s degree or above', s=>s.uni==null ? '—' : s.uni+'%') + row('Mean employees per shop', s=>fx(s.emp)) + '</tbody>';
+}
+
+// ============================================================
+//  PANEL: FIELD PROGRESS
+// ============================================================
+function drawOps(){
+  const fl = FLD(), done = fl.filter(r=>r.cm), T = targetNow();
+  const days = new Set(fl.map(r=>r.d)).size, ens = new Set(fl.map(r=>r.en)).size;
+  const perDay = days ? done.length/days : 0, remaining = Math.max(T - done.length, 0);
+  const daysLeft = perDay ? Math.ceil(remaining/perDay) : null;
+  const conv = share(done.length, fl.length);
+  $('op-kpis').innerHTML =
+    kpi('📅', days, 'Field Days', 'Last activity ' + (fl.length ? fmtD(fl.map(r=>r.d).sort().pop()) : '—'), 'navy', 'navy') +
+    kpi('⚡', fx(perDay), 'Completes per Day', 'Average over field days', 'up', 'green') +
+    kpi('👥', ens, 'Active Enumerators', ens ? '~'+fx(done.length/ens)+' completes each' : '—', 'navy', 'teal') +
+    kpi('⏱️', fx(median(done.map(r=>r.dur))), 'Median Duration (min)', 'Completed interviews', 'neutral', 'amber') +
+    kpi('📈', conv==null ? '—' : conv+'%', 'Visit Conversion', 'Visits ending in an interview', 'neutral', 'purple');
+  $('op-insights').innerHTML = !fl.length ? '' :
+    `<div class="insight-box teal"><strong>Pace:</strong> the team is averaging <strong>${fx(perDay)}</strong> completed interviews per field day. ` +
+    (T ? (remaining ? `At that rate the remaining <strong>${remaining}</strong> interviews would take roughly <strong>${daysLeft==null?'—':daysLeft}</strong> more field days.` : 'The sample target has been reached.') : '') + `</div>` +
+    `<div class="insight-box amber"><strong>Conversion:</strong> <strong>${conv==null?'—':conv}%</strong> of shop visits end in a completed interview, about <strong>${done.length ? fx(fl.length/done.length) : '—'}</strong> visits per completed case. ` +
+    `Refusals: <strong>${fl.filter(r=>[3,4,5,6].includes(r.oc)).length}</strong>; not reached: <strong>${fl.filter(r=>[7,8,9,10].includes(r.oc)).length}</strong>.</div>`;
+
+  cumulativeChart('chartCumulative', dailyFilled(fl, done), T);
+
+  const grp = r => r.oc===1 ? 'Completed' : r.oc===2 ? 'Partial' : [3,4,5,6].includes(r.oc) ? 'Refused' : 'Not reached';
+  const order = ['Completed','Partial','Refused','Not reached'];
+  const en = [...new Set(fl.map(r=>r.en))].sort();
+  const st = stackCount(fl, r=>r.en, grp, en, order, [S(6), S(8), S(2), MUTED()]);
+  stackedCountChart('chartEnums', en, st);
+  barChart('chartDuration', tally(done, r=>bandOf(r.dur,[10,15,20,25,30,40],['<10','10–14','15–19','20–24','25–29','30–39','40+']),
+                                  ['<10','10–14','15–19','20–24','25–29','30–39','40+']), S(4), false);
+}
+function stackCount(rs, catFn, serFn, cats, sers, colors){
+  return sers.map((s,i)=>({name:s, color:colors[i], data:cats.map(c=>rs.filter(r=>catFn(r)===c && serFn(r)===s).length)}));
+}
+function stackedCountChart(id, cats, series){
+  if(!has(id, cats.map((c,i)=>({value:series.reduce((s,x)=>s+x.data[i],0)})))) return;
+  fitHeight(id, cats.length, 34, 80);
+  mk(id,{type:'bar',
+    data:{labels:cats, datasets:series.map(s=>({label:s.name, data:s.data, backgroundColor:s.color, borderWidth:1, borderColor:CV('--surface')||'#fff', maxBarThickness:24}))},
+    options:baseOpts({ indexAxis:'y',
+      plugins:{legend:{position:'top',labels:{font:FONT,color:TXT(),boxWidth:12,padding:10}},
+        datalabels:{display:c=>(c.dataset.data[c.dataIndex]||0)>=3, color:c=>c.dataset.label==='Not reached'?TXT():'#fff', font:{family:'Inter',size:10.5,weight:'700'}}},
+      scales:{ y:{stacked:true,ticks:{font:{family:'Inter',size:11},color:TXT()},grid:{display:false},border:{display:false}},
+               x:{stacked:true,beginAtZero:true,ticks:{font:{family:'Inter',size:11},color:TXT(),precision:0},grid:{color:GRID()},border:{display:false}}}})});
+}
+
+// ============================================================
+//  PANEL: PROFILE
+// ============================================================
+const EDU_ORDER = () => listLabels('educ4');
+const AGE_ORDER = ['18–24','25–34','35–44','45–54','55+'];
+function drawProf(){
+  const d = DONE(), eduL = EDU_ORDER();
+  $('pf-kpis').innerHTML =
+    kpi('🎂', fx(mean(d.map(r=>r.age))), 'Mean Manager Age', 'Median ' + fx(median(d.map(r=>r.age))) + ' years', 'navy', 'navy') +
+    kpi('🎓', (share(d.filter(r=>r.ed===eduL[3]).length, d.filter(r=>r.ed).length) ?? '—') + (d.some(r=>r.ed)?'%':''), 'Bachelor’s Degree or Above', 'Share of managers', 'up', 'green') +
+    kpi('👥', fx(mean(d.map(r=>r.emp))), 'Mean Employees', 'Per shop, excluding manager', 'neutral', 'teal') +
+    kpi('🏪', fx(median(d.map(r=>r.fy))), 'Median Shop Age (years)', 'Years in operation', 'neutral', 'amber') +
+    kpi('🧑‍💼', fx(median(d.map(r=>r.mt))), 'Median Manager Tenure (years)', 'At this shop', 'navy', 'purple');
+  donutChart('chartPfShop', tally(d, r=>r.st), PALETTE());
+  barChart('chartPfEdu', tally(d, r=>r.ed, eduL), S(3), false);
+  barChart('chartPfAge', tally(d, r=>r.ag, AGE_ORDER), S(1), false);
+  const shops = tally(d, r=>r.st).map(x=>x.label);
+  const sp = stackPct(d, r=>r.st, r=>r.ed, shops, eduL, [S(8), S(4), S(3), S(1)]);
+  stackedChart('chartPfEduShop', sp.cats, sp.series, true);
+  barChart('chartPfBlock', tally(d, r=>r.blk), S(5), true);
+  barChart('chartPfEmp', tally(d, r=>bandOf(r.emp,[1,3,6,11],['None','1–2','3–5','6–10','11+']), ['None','1–2','3–5','6–10','11+']), S(6), false);
+  barChart('chartPfFirmAge', tally(d, r=>bandOf(r.fy,[2,5,10,20],['<2 yrs','2–4','5–9','10–19','20+']), ['<2 yrs','2–4','5–9','10–19','20+']), S(4), false);
+  barChart('chartPfArea', tally(d, r=>bandOf(r.area,[20,50,100,200],['<20','20–49','50–99','100–199','200+']), ['<20','20–49','50–99','100–199','200+']), S(7), false);
+}
+
+// ============================================================
+//  PANEL: EXPECTATIONS
+// ============================================================
+function drawExp(){
+  const d = DONE(), pb1 = STATE.survey===1;
+  const e = d.map(r=>ev(r.e1)), n = nums(e).length;
+  const rngW = mean(d.map(r=> (ev(r.elo)!=null && ev(r.ehi)!=null) ? r.ehi - r.elo : null));
+  const rev = mean(d.map(r=> (ev(r.e1)!=null && ev(r.pm)!=null) ? r.pm - r.e1 : null));
+  $('ex-kpis').innerHTML =
+    kpi('📈', fx(mean(e),'%'), 'Mean Expected Inflation', 'Next 12 months · n = '+n, 'neutral', '') +
+    kpi('🎯', fx(median(e),'%'), 'Median Expected Inflation', 'Half of managers expect less', 'navy', 'navy') +
+    kpi('🔥', (share(nums(e).filter(x=>x>=10).length, n) ?? '—') + (n?'%':''), 'Expect 10% or More', 'Share of managers', 'down', 'amber') +
+    (pb1 ? kpi('↔️', fx(rngW,' pp'), 'Average Uncertainty Range', 'Highest minus lowest possible', 'neutral', 'teal') +
+           kpi('🧭', rev==null ? '—' : (rev>0?'+':'')+fx(rev,' pp'), 'Revision After Information', 'Most-likely vs initial forecast', rev!=null&&rev<0?'up':'neutral', 'purple')
+         : kpi('📏', n ? fx(quant(e,.25))+'–'+fx(quant(e,.75))+'%' : '—', 'Middle 50% of Managers', 'Inter-quartile range', 'neutral', 'teal'));
+
+  barChart('chartExDist', tally(d.filter(r=>ev(r.e1)!=null), r=>expBand(ev(r.e1)), EXP_BANDS_L), S(2), false);
+  const sp = stackPct(d.filter(r=>ev(r.e1)!=null), r=>r.ed, r=>expBand(ev(r.e1)), EDU_ORDER(), EXP_BANDS_L, [S(6),S(3),S(1),S(5),S(8),S(4),S(2)]);
+  stackedChart('chartExBandEdu', sp.cats, sp.series, true);
+  barChart('chartExShop', meanBy(d, r=>r.st, r=>ev(r.e1)), S(1), true, '%');
+  barChart('chartExEdu', meanBy(d, r=>r.ed, r=>ev(r.e1), EDU_ORDER()), S(3), true, '%');
+  barChart('chartExAge', meanBy(d, r=>r.ag, r=>ev(r.e1), AGE_ORDER), S(4), true, '%');
+  barChart('chartExBlock', meanBy(d, r=>r.blk, r=>ev(r.e1)), S(5), true, '%');
+  if(pb1){
+    const m = f => r1(mean(d.map(r=>ev(r[f]))));
+    groupedBar('chartExPrePost', ['Lowest possible','Most likely','Highest possible'], [
+      {name:'Before information', data:[m('elo'), m('e1'), m('ehi')], color:S(7)},
+      {name:'After information (8.4%)', data:[m('plo'), m('pm'), m('phi')], color:S(3)}], '%');
+  }
+}
+
+// ============================================================
+//  PANEL: PB1 — UNDERSTANDING & DECISIONS
+// ============================================================
+const MARGIN_LABELS = ['Price of main products','Monthly wage bill','Borrowing / debt','Investment','Total labour hours','Employees: full-time','Employees: part-time','Employees: unpaid'];
+function topFraming(d){
+  const t = tally(d.filter(r=>r.fr!=null), r=>r.fr).sort((a,b)=>b.value-a.value)[0];
+  return t ? ({'1':'“6%” form','2':'“Rs 100→106”','3':'Both equal'}[t.label] || '—') : '—';
+}
+function drawMod1(){
+  const d = DONE();
+  const u1 = d.filter(r=>r.un1!=null), u2 = d.filter(r=>r.un2!=null), cc = d.filter(r=>r.calc!=null);
+  const full1 = share(u1.filter(r=>r.un1===2).length, u1.length), full2 = share(u2.filter(r=>r.un2===2).length, u2.length);
+  const framing = tally(d, r=>r.fr!=null ? listLabel('framing3', r.fr) : null);
+  $('m1-kpis').innerHTML =
+    kpi('🧠', full1==null ? '—' : full1+'%', 'Fully Understand “Inflation”', 'Before the definition was read', 'neutral', 'teal') +
+    kpi('📘', full2==null ? '—' : full2+'%', 'Understand After Definition', full1!=null&&full2!=null ? (full2-full1>=0?'+':'')+(full2-full1)+' pts vs before' : '—', 'up', 'green') +
+    kpi('🧮', share(cc.filter(r=>r.calc===1).length, cc.length)==null ? '—' : share(cc.filter(r=>r.calc===1).length, cc.length)+'%', 'Answered 3% Calculation Correctly', 'Rs 100 rising by 3%', 'neutral', 'amber') +
+    kpi('💬', topFraming(d), 'Preferred Way to Describe Inflation', 'Most-chosen option', 'navy', 'purple');
+  donutChart('chartUn1', tally(u1, r=>listLabel('understand3', r.un1), listLabels('understand3')), [S(2), S(8), S(6)]);
+  donutChart('chartUn2', tally(u2, r=>listLabel('understand3', r.un2), listLabels('understand3')), [S(2), S(8), S(6)]);
+  donutChart('chartCalc', tally(cc, r=>r.calc ? 'Correct (103)' : 'Incorrect', ['Correct (103)','Incorrect']), [S(6), S(2)]);
+  barChart('chartFraming', framing.map(x=>({label:x.label.length>46 ? x.label.slice(0,44)+'…' : x.label, value:x.value})), S(5), true);
+
+  const col = (k,i) => d.map(r=> r[k] ? pv(r[k][i]) : null);
+  const preM = MARGIN_LABELS.map((_,i)=>r1(mean(col('c',i)))), postM = MARGIN_LABELS.map((_,i)=>r1(mean(col('e',i))));
+  groupedBar('chartDecMean', MARGIN_LABELS, [{name:'Before information', data:preM, color:S(7)}, {name:'After information', data:postM, color:S(3)}], '%', true);
+  const dirOf = v => v==null ? null : v<0 ? 'Decrease' : v>0 ? 'Increase' : 'No change';
+  const SER = ['Decrease','No change','Increase'], COL = [S(2), MUTED(), S(6)];
+  ['c','e'].forEach(k=>{
+    const rows = d.flatMap(r=>MARGIN_LABELS.map((m,i)=>({m, v:dirOf(r[k] ? pv(r[k][i]) : null)}))).filter(x=>x.v);
+    const sp = stackPct(rows, x=>x.m, x=>x.v, MARGIN_LABELS, SER, COL);
+    stackedChart(k==='c' ? 'chartDecPre' : 'chartDecPost', sp.cats, sp.series, true);
+  });
+}
+
+// ============================================================
+//  PANEL: PB2 — COMMUNICATION NETWORK
+// ============================================================
+const SRC_LABELS = ['Operating costs (inputs, wages, rent, energy)','Official domestic sources (SBP)','Official international sources (e.g. IMF)','Conversations with other firms','Social (media, family, friends)'];
+const FREQ_TOPICS = ['Anything','Prices of your product','Business expenses','Inflation in general'];
+const MQ_LABELS = ['Discussion started about prices / costs','Already knew the inflation forecast','Exact inflation numbers discussed','Sought their advice on inflation','Checked official statistics afterwards','Adjusted business decisions afterwards','Prompted talks with other firms'];
+function drawMod2(){
+  const d = DONE();
+  const nf = d.filter(r=>r.nf!=null), mem = d.filter(r=>r.mem!=null);
+  const srcMeans = SRC_LABELS.map((l,i)=>({label:l, value:r1(mean(d.map(r=>r.src ? r.src[i] : null)))})).filter(x=>x.value!=null);
+  const topSrc = srcMeans.slice().sort((a,b)=>b.value-a.value)[0];
+  const weekly = d.filter(r=>r.fq && r.fq.slice(0,4).some(f=>f===1 || f===2));
+  $('m2-kpis').innerHTML =
+    kpi('🗣️', fx(mean(nf.map(r=>r.nf))), 'Avg Firms Spoken To', 'Over the past 3 months', 'navy', 'navy') +
+    kpi('🤝', (share(nf.filter(r=>r.nf>0).length, nf.length) ?? '—') + (nf.length?'%':''), 'Talked With ≥1 Other Firm', 'About inflation', 'up', 'green') +
+    kpi('💡', (share(mem.filter(r=>r.mem===1).length, mem.length) ?? '—') + (mem.length?'%':''), 'Recall a Memorable Conversation', 'That affected expectations', 'neutral', 'amber') +
+    kpi('⭐', topSrc ? topSrc.value+' / 10' : '—', 'Top-Rated Information Source', topSrc ? topSrc.label.split('(')[0].trim() : '—', 'neutral', 'purple') +
+    kpi('📆', (share(weekly.length, d.filter(r=>r.fq).length) ?? '—') + (d.some(r=>r.fq)?'%':''), 'Talk at Least Weekly', 'On any topic', 'neutral', 'teal');
+
+  barChart('chartSrc', srcMeans, S(1), true);
+  barChart('chartNF', tally(nf, r=>bandOf(r.nf,[1,2,3,5,8],['0','1','2','3–4','5–7','8+']), ['0','1','2','3–4','5–7','8+']), S(4), false);
+  donutChart('chartDist', tally(d.filter(r=>r.nf>0 && r.dcat!=null), r=>listLabel('dist_cat', r.dcat), listLabels('dist_cat')), PALETTE());
+  donutChart('chartMem', tally(mem, r=>r.mem===1 ? 'Yes' : 'No', ['Yes','No']), [S(6), MUTED()]);
+  donutChart('chartSoc', tally(d.filter(r=>r.mem===1 && r.soc!=null), r=>listLabel('soc_rel', r.soc), listLabels('soc_rel')), [S(3), S(4), MUTED()]);
+
+  const FQ = listLabels('freq5'), rowsF = d.filter(r=>r.fq).flatMap(r=>FREQ_TOPICS.map((t,i)=>({t, v: r.fq[i]!=null ? listLabel('freq5', r.fq[i]) : null}))).filter(x=>x.v);
+  const sf = stackPct(rowsF, x=>x.t, x=>x.v, FREQ_TOPICS, FQ, [S(6), S(3), S(1), S(8), MUTED()]);
+  stackedChart('chartFreq', sf.cats, sf.series, true);
+
+  const YM = [['Yes',1,S(6)],['Maybe',2,S(8)],['No',3,S(2)],["Don't know",999,MUTED()]];
+  const rowsQ = d.filter(r=>r.mem===1 && r.mq).flatMap(r=>MQ_LABELS.map((q,i)=>({q, v: r.mq[i]!=null ? (YM.find(y=>y[1]===r.mq[i])||[])[0] : null}))).filter(x=>x.v);
+  const sq = stackPct(rowsQ, x=>x.q, x=>x.v, MQ_LABELS, YM.map(y=>y[0]), YM.map(y=>y[2]));
+  stackedChart('chartMq', sq.cats, sq.series, true);
+
+  barChart('chartRel', tally(d.filter(r=>r.mem===1), r=>(r.rel||[]).map(c=>listLabel('bus_rel', c)), []), S(3), true);
+  barChart('chartKnown', tally(d.filter(r=>r.mem===1 && r.kn!=null), r=>listLabel('known_dur', r.kn), listLabels('known_dur')), S(5), true);
+  barChart('chartAttr', tally(d, r=>(r.attr||[]).map(c=>listLabel('key_attr', c))), S(7), true);
+}
+
+// ============================================================
+//  PANEL: TRACKER + TABLES
+// ============================================================
+const barColor = p => p>=100 ? S(6) : p>=50 ? S(4) : p>0 ? S(2) : MUTED();
+function statusBadge(s){
+  if(s==='Completed')   return '<span class="badge badge-green">✓ Completed</span>';
+  if(s==='In Progress') return '<span class="badge badge-amber">● In Progress</span>';
+  return '<span class="badge badge-grey">○ Not Started</span>';
+}
+function outcomeBadge(r){
+  const c = r.oc===1 ? 'badge-green' : r.oc===2 ? 'badge-amber' : [3,4,5,6].includes(r.oc) ? 'badge-red' : 'badge-grey';
+  return `<span class="badge ${c}">${r.ou}</span>`;
+}
+function blockRows(){
+  const sm = SURVEY(), fl = FLD(), names = new Set([...Object.keys(sm.frame_blocks), ...fl.map(r=>r.blk)]);
+  return [...names].filter(b=>STATE.block==='all' || b===STATE.block).map(b=>{
+    const target = sm.blocks[b] || 0, vis = fl.filter(r=>r.blk===b), done = vis.filter(r=>r.cm).length;
+    const pct = target ? Math.round(100*done/target) : 0;
+    return { block:b, target, visits:vis.length, done, pct, status: target && done>=target ? 'Completed' : done ? 'In Progress' : 'Not Started' };
+  });
+}
+function logRows(){
+  const rs = (profileActive() ? DB.records.filter(r=>PRED.full(r)) : FLD());
+  return rs.map(r=>({ date:r.d, block:r.blk, shop:r.st||'—', en:r.en, outcome:r.ou, oc:r.oc, ou:r.ou, edu:r.ed||'—', age:r.ag||'—',
+                      infl:ev(r.e1), dur:r.dur, raw:r })).sort((a,b)=>b.date.localeCompare(a.date));
+}
+const TBL = {};
+function initTables(){
+  TBL.blk = { rows:blockRows, thead:'blk-table', body:'blk-table', search:'blk-search', filter:r=>{ const f=$('blk-status').value; return f==='all' || r.status===f; },
+    sort:{k:'block', dir:1}, count:'blk-count', file:'block_tracker',
+    cols:[{k:'block',l:'Block',str:1},{k:'target',l:'Target',num:1},{k:'visits',l:'Visits',num:1},{k:'done',l:'Completed',num:1},{k:'pct',l:'Completion'},{k:'status',l:'Status',str:1}],
+    cell:(r,c)=> c.k==='block' ? `<span class="mz-mauza">${r.block}</span>` : c.k==='target' ? (r.target||'—') :
+      c.k==='pct' ? (r.target ? `<span class="mz-bar"><span style="width:${Math.min(r.pct,100)}%;background:${barColor(r.pct)}"></span></span><span class="mz-pct" style="color:${barColor(r.pct)}">${r.pct}%</span>` : '—') :
+      c.k==='status' ? statusBadge(r.status) : `<span class="mz-frac"><span class="done">${r[c.k]}</span></span>`,
+    csv:r=>[r.block,r.target,r.visits,r.done,r.target?r.pct:'',r.status] };
+  TBL.log = { rows:logRows, search:'log-search', filter:r=>{ const f=$('log-outcome').value; return f==='all' || r.outcome===f; },
+    sort:{k:'date', dir:-1}, count:'log-count', file:'interview_log', cap:600,
+    cols:[{k:'date',l:'Date',str:1},{k:'block',l:'Block',str:1},{k:'shop',l:'Shop type',str:1},{k:'en',l:'Enumerator',str:1},{k:'outcome',l:'Outcome',str:1},
+          {k:'edu',l:'Education',str:1},{k:'age',l:'Age group',str:1},{k:'infl',l:'Expected inflation (%)',num:1},{k:'dur',l:'Duration (min)',num:1}],
+    cell:(r,c)=> c.k==='date' ? fmtD(r.date)+' '+r.date.slice(0,4) : c.k==='outcome' ? outcomeBadge(r.raw) : c.k==='infl' ? (r.infl==null?'—':r.infl) : c.k==='dur' ? (r.dur==null?'—':r.dur) :
+      c.k==='block' ? `<span class="mz-mauza">${r.block}</span>` : r[c.k],
+    csv:r=>[r.date,r.block,r.shop,r.en,r.outcome,r.edu,r.age,r.infl??'',r.dur??''] };
+  ['blk','log'].forEach(key=>{
+    const t = TBL[key], tbl = $(key+'-table');
+    tbl.querySelector('thead').innerHTML = '<tr>' + t.cols.map(c=>`<th class="${c.num?'num':''}" data-k="${c.k}">${c.l} <span class="arrow"></span></th>`).join('') + '</tr>';
+    tbl.querySelectorAll('th').forEach(th=>{
+      th.onclick = () => { const k = th.dataset.k; if(t.sort.k===k) t.sort.dir *= -1; else { t.sort.k = k; t.sort.dir = t.cols.find(c=>c.k===k).str ? 1 : -1; } renderTable(key); };
+    });
+  });
+}
+function tableData(key){
+  const t = TBL[key], q = ($(t.search).value||'').toLowerCase().replace(/\s+/g,'');
+  let rows = t.rows().filter(t.filter);
+  if(q) rows = rows.filter(r=>t.cols.map(c=>String(r[c.k]??'')).join('').toLowerCase().replace(/\s+/g,'').includes(q));
+  const {k,dir} = t.sort;
+  rows.sort((a,b)=>{ const x=a[k], y=b[k];
+    if(x==null) return 1; if(y==null) return -1;
+    return (typeof x==='string' ? x.localeCompare(y) : x-y) * dir; });
+  return rows;
+}
+function renderTable(key){
+  const t = TBL[key], rows = tableData(key), shown = t.cap ? rows.slice(0,t.cap) : rows;
+  const tb = $(key+'-table').querySelector('tbody');
+  tb.innerHTML = shown.length ? shown.map(r=>'<tr>' + t.cols.map(c=>`<td class="${c.num?'num':''}">${t.cell(r,c)}</td>`).join('') + '</tr>').join('')
+    : `<tr><td colspan="${t.cols.length}" class="mz-empty">📭 No rows match the current filters or search.</td></tr>`;
+  $(key+'-table').querySelectorAll('th').forEach(th=>{ th.querySelector('.arrow').textContent = th.dataset.k===t.sort.k ? (t.sort.dir===1?'▲':'▼') : ''; });
+  $(t.count).textContent = rows.length.toLocaleString() + ' rows' + (t.cap && rows.length>t.cap ? ` (first ${t.cap} shown)` : '');
+}
+function drawTrk(){
+  const sm = SURVEY(), fl = FLD(), T = targetNow();
+  const done = fl.filter(r=>r.cm).length, bl = blockRows();
+  $('tk-kpis').innerHTML =
+    kpi('🎯', T.toLocaleString(), 'Sample Target', Object.keys(sm.blocks).length+' blocks with primary shops', 'navy', 'navy') +
+    kpi('✅', done.toLocaleString(), 'Total Completed', T ? pctOf(done,T)+'% of target' : '—', 'up', 'green') +
+    kpi('🏘️', bl.filter(b=>b.done>0).length+' / '+bl.length, 'Blocks Started', 'At least one completed interview', 'neutral', 'teal') +
+    kpi('🏁', bl.filter(b=>b.status==='Completed').length+' / '+bl.filter(b=>b.target>0).length, 'Blocks at Target', 'Completed ≥ block target', 'up', 'amber');
+  $('tk-cards').innerHTML = [1,2].map(s=>{
+    const st = surveyStatsField(s), pct = st.target ? Math.round(100*st.done/st.target) : 0, c = barColor(pct);
+    return `<div class="land-card"><div class="lc-bin">${DB.meta.surveys[s].label}</div>
+      <div class="lc-frac">${st.done.toLocaleString()} <span class="lc-tgt">/ ${st.target.toLocaleString()}</span></div>
+      <div class="lc-track"><span style="width:${Math.min(pct,100)}%;background:${c}"></span></div>
+      <div class="lc-foot"><span class="lc-pct" style="color:${c}">${pct}%</span>${statusBadge(st.done>=st.target&&st.target ? 'Completed' : st.done ? 'In Progress' : 'Not Started')}</div></div>`;
+  }).join('');
+  renderTable('blk'); renderTable('log');
+}
+function surveyStatsField(s){
+  const st = Object.assign({}, STATE, {survey:s});
+  return { done:DB.records.filter(r=>PRED.field(r,st) && r.cm).length,
+           target: st.block==='all' ? DB.meta.surveys[s].target : (DB.meta.surveys[s].blocks[st.block]||0) };
+}
+
+// ============================================================
+//  EXPORTS  (CSV · Excel · PDF)
+// ============================================================
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+const stamp = () => new Date().toISOString().slice(0,10);
+function exportTableCSV(key){
+  const t = TBL[key], rows = tableData(key);
+  const esc = s => '"' + String(s).replace(/"/g,'""') + '"';
+  let csv = t.cols.map(c=>esc(c.l)).join(',') + '\n';
+  rows.forEach(r=>{ csv += t.csv(r).map(esc).join(',') + '\n'; });
+  download(new Blob(["﻿"+csv], {type:'text/csv;charset=utf-8;'}), `inflation_${SURVEY().label.replace(/\s+/g,'')}_${t.file}_${stamp()}.csv`);
+}
+function loadScript(src){
+  return new Promise((res,rej)=>{ if(window.XLSX) return res(); const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Could not load the Excel library')); document.head.appendChild(s); });
+}
+async function exportExcel(){
+  showLoading(true, 'Preparing Excel workbook…');
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    const wb = XLSX.utils.book_new(), sm = SURVEY(), done = DONE(), fl = FLD(), e = done.map(r=>ev(r.e1));
+    const filt = Object.keys(FILTER_NAMES).filter(k=>STATE[k]&&STATE[k]!=='all').map(k=>FILTER_NAMES[k]+' = '+STATE[k]).join('; ') || 'None';
+    const summary = [['Inflation Project — '+sm.label],['Generated', new Date().toLocaleString('en-GB')],['Data', DB.meta.is_dummy ? 'DUMMY DATA' : 'Live data as of '+DB.meta.generated],['Filters', filt],[],
+      ['Indicator','Value'],['Completed interviews', done.length],['Sample target', targetNow()],['Shop visits', fl.length],
+      ['Mean expected inflation, 12 m (%)', r1(mean(e))],['Median expected inflation, 12 m (%)', r1(median(e))],['Median interview length (min)', r1(median(done.map(r=>r.dur)))],
+      ['Mean manager age (years)', r1(mean(done.map(r=>r.age)))],['Mean employees per shop', r1(mean(done.map(r=>r.emp)))]];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Summary');
+    ['blk','log'].forEach(key=>{
+      const t = TBL[key], rows = tableData(key);
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([t.cols.map(c=>c.l), ...rows.map(t.csv)]), key==='blk' ? 'Block Tracker' : 'Interview Log');
+    });
+    XLSX.writeFile(wb, `inflation_${sm.label.replace(/\s+/g,'')}_${stamp()}.xlsx`);
+  }catch(err){ alert('Excel export failed: ' + err.message + '. You can still use the CSV export buttons.'); }
+  showLoading(false);
+}
+/* PDF = the browser's print dialog ("Save as PDF").  All panels are drawn first so the report is complete. */
+function exportPDF(){
+  showLoading(true, 'Preparing report…');
+  const keep = activePanelId();
+  document.body.classList.add('print-all');
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='block');
+  destroyAllCharts(); drawn.clear();
+  Object.keys(PANEL_DRAW).forEach(id=>{ if((id==='mod1'&&STATE.survey!==1)||(id==='mod2'&&STATE.survey!==2)) return; drawPanel(id); });
+  setTimeout(()=>{
+    showLoading(false);
+    window.print();
+    document.body.classList.remove('print-all');
+    document.querySelectorAll('.panel').forEach(p=>p.style.display='');
+    redrawAll();
+  }, 900);
+}
+
+let __rz;
+window.addEventListener('resize', ()=>{
+  clearTimeout(__rz);
+  __rz = setTimeout(()=>{
+    const active = document.querySelector('.panel.active'); if(!active) return;
+    active.querySelectorAll('canvas').forEach(c=>{ const ch = Chart.getChart(c); if(ch) ch.resize(); });
+  }, 250);
+});
+</script>
+</body>
+</html>

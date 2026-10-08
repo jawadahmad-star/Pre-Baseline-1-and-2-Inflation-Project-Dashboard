@@ -1,0 +1,13 @@
+# RAW DATA / PII - never commit
+*.csv
+*.dta
+*.xlsx
+*.xls
+*.zip
+*.rar
+dummy_data/
+reference/
+password.local.txt
+*.local.*
+__pycache__/
+site/
