@@ -81,7 +81,6 @@
     .header-logo-wrap img { height:44px; display:block; }
     .header-study { text-align:center; flex:1; padding:0 16px; }
     .header-study-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#fff; letter-spacing:-.2px; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
-    .demo-chip { font-family:'Inter',sans-serif; font-size:9.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:var(--amber-500); color:#1E2438; padding:3px 9px; border-radius:5px; }
     .header-study-sub { font-size:11px; color:rgba(255,255,255,.55); letter-spacing:.6px; text-transform:uppercase; margin-top:4px; }
     .header-meta { text-align:right; font-size:12px; color:rgba(255,255,255,.55); line-height:1.7; white-space:nowrap; }
     .header-meta strong { color:rgba(255,255,255,.9); font-size:13px; }
@@ -225,7 +224,6 @@
     .auth-card { background:#fff; border-radius:20px; padding:44px 40px; width:100%; max-width:430px; box-shadow:0 24px 80px rgba(0,0,0,.45); text-align:center; }
     .auth-logo { width:54px; height:54px; background:var(--rs-red); border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:25px; margin:0 auto 20px; box-shadow:0 8px 20px rgba(232,25,44,.3); }
     .auth-title { font-family:'Playfair Display',serif; font-size:23px; font-weight:700; color:#2D3450; margin-bottom:6px; }
-    .auth-demo { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:#FEF3C7; color:#78350f; padding:4px 10px; border-radius:5px; margin-bottom:14px; }
     .auth-subtitle { font-size:13px; color:#475569; margin-bottom:26px; line-height:1.6; }
     .auth-label { display:block; text-align:left; font-size:12px; font-weight:600; color:#6B7494; letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px; }
     .auth-input { width:100%; padding:13px 16px; border:2px solid #e2e8f0; border-radius:10px; font-family:'Inter',sans-serif; font-size:15px; color:#2D3450; background:#fff; outline:none; transition:border-color .2s; letter-spacing:.12em; }
@@ -371,7 +369,6 @@
 <div id="auth-gate">
   <div class="auth-card">
     <div class="auth-logo">📈</div>
-    <div class="auth-demo" id="auth-demo" style="display:none">Dummy Data</div>
     <div class="auth-title">Inflation Project</div>
     <div class="auth-subtitle">Pre-Baseline survey dashboard.<br>Access is restricted — please enter the password provided by Research Solutions.</div>
     <label class="auth-label" for="auth-pw">Access Password</label>
@@ -402,7 +399,7 @@
         </div>
       </div>
       <div class="header-study">
-        <div class="header-study-title">Inflation Project <span class="demo-chip" id="demo-chip" style="display:none">Dummy Data</span></div>
+        <div class="header-study-title">Inflation Project</div>
         <div class="header-study-sub">Pre-Baseline Surveys · Firm Inflation Expectations</div>
       </div>
       <div class="header-meta">
@@ -727,7 +724,6 @@ async function checkAuth(pwOverride){
     $('no-data').innerHTML = '<div class="banner-card err"><h4>Dashboard could not be displayed</h4>' + (e.message||e) + '. Please refresh the page; if it persists contact Research Solutions.</div>'; }
 }
 window.addEventListener('DOMContentLoaded', ()=>{
-  $('auth-demo').style.display = PUBLIC.is_dummy ? 'inline-block' : 'none';
   let pw = null; try { pw = sessionStorage.getItem('ip_pw'); } catch(_){}
   if(pw) checkAuth(pw);
 });
@@ -1136,7 +1132,7 @@ function renderSampleNote(){
     (chips ? `<span class="chips">${chips}</span>` : '');
   $('print-head').innerHTML = `<div class="print-head-title"><b>Inflation Project</b><span>Research Solutions · Pre-Baseline Surveys · Allama Iqbal Town, Lahore</span></div><strong>${SURVEY().label}</strong> · ${n} completed interviews · ` +
     (filtersActive() ? 'Filters: ' + Object.keys(FILTER_NAMES).filter(k=>STATE[k]&&STATE[k]!=='all').map(k=>FILTER_NAMES[k]+' = '+STATE[k]).join('; ') : 'No filters applied') +
-    ` · ${DB.meta.is_dummy ? 'DUMMY DATA' : 'Data as of '+DB.meta.generated}`;
+    ` · ${'Data as of '+DB.meta.generated}`;
   const total = DB.records.filter(r=>r.s===STATE.survey).length;
   $('no-data').innerHTML = total ? '' :
     `<div class="banner-card"><h4>📭 No ${SURVEY().label} data yet</h4>Interviews will appear here automatically once the first export is placed in the Data folder and the dashboard is refreshed. Targets and the sampling frame are already loaded.</div>`;
@@ -1183,13 +1179,10 @@ async function boot(){
   $('auth-gate').style.display = 'none';
   $('site-content').style.display = 'block';
   const m = DB.meta;
-  $('demo-chip').style.display = m.is_dummy ? '' : 'none';
-  $('banner-kind').textContent = m.is_dummy ? 'Dummy Data' : 'Live Data';
-  $('banner-text').innerHTML = m.is_dummy
-    ? 'Illustrative figures only — real interview data will replace this automatically. Last built <strong style="color:#fff;">' + m.generated + '</strong>.'
-    : 'Updated daily from the field. Last refreshed <strong style="color:#fff;">' + m.generated + '</strong>.';
-  $('banner-pill').textContent = m.is_dummy ? 'Demo' : 'Live';
-  $('footer-kind').textContent = m.is_dummy ? 'Dummy data — figures are illustrative' : 'Confidential — for client use only';
+  $('banner-kind').textContent = 'Live Data';
+  $('banner-text').innerHTML = 'Updated daily from the field. Last refreshed <strong style="color:#fff;">' + m.generated + '</strong>.';
+  $('banner-pill').textContent = 'Live';
+  $('footer-kind').textContent = 'Confidential — for client use only';
   $('footer-updated').textContent = 'Built ' + m.generated;
   $('survey-seg').querySelectorAll('button').forEach(b=>{ b.textContent = m.surveys[b.dataset.s].label; });
   syncSurveyUI(); buildFilterOptions(); initTables();
@@ -1566,7 +1559,7 @@ async function exportExcel(){
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
     const wb = XLSX.utils.book_new(), sm = SURVEY(), done = DONE(), fl = FLD(), e = done.map(r=>ev(r.e1));
     const filt = Object.keys(FILTER_NAMES).filter(k=>STATE[k]&&STATE[k]!=='all').map(k=>FILTER_NAMES[k]+' = '+STATE[k]).join('; ') || 'None';
-    const summary = [['Inflation Project — '+sm.label],['Generated', new Date().toLocaleString('en-GB')],['Data', DB.meta.is_dummy ? 'DUMMY DATA' : 'Live data as of '+DB.meta.generated],['Filters', filt],[],
+    const summary = [['Inflation Project — '+sm.label],['Generated', new Date().toLocaleString('en-GB')],['Data', 'Live data as of '+DB.meta.generated],['Filters', filt],[],
       ['Indicator','Value'],['Completed interviews', done.length],['Sample target', targetNow()],['Shop visits', fl.length],
       ['Mean expected inflation, 12 m (%)', r1(mean(e))],['Median expected inflation, 12 m (%)', r1(median(e))],['Median interview length (min)', r1(median(done.map(r=>r.dur)))],
       ['Mean manager age (years)', r1(mean(done.map(r=>r.age)))],['Mean employees per shop', r1(mean(done.map(r=>r.emp)))]];

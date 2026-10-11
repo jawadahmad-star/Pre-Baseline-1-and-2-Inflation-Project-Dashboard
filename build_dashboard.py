@@ -2,13 +2,12 @@
 build_dashboard.py  -  Inflation Project (Pre-Baseline 1 & 2) dashboard builder.
 
     python build_dashboard.py                 build index.html from the newest real exports
-    python build_dashboard.py --dummy         force the synthetic demo data
     python build_dashboard.py --set-password  store a new access password (local, git-ignored)
 
 DATA DROP (newest file wins, .csv / .dta / .xlsx, SurveyCTO "WIDE" export):
     Pre-Baseline 1  ->  ..\\Data 1\\   (or this folder)   file name contains "PreBaseline_1" / "Pre-Baseline 1" / "PB1"
     Pre-Baseline 2  ->  ..\\Data 2\\   (or this folder)   file name contains "PreBaseline_2" / "Pre-Baseline 2" / "PB2"
-If neither survey has real data yet, dummy_data/ is used automatically (banner says so).
+The build stops with an error if no export is found for either survey.
 
 PRIVACY
     * The page embeds de-identified interview rows (no names, phones, GPS, shop names, shop IDs,
@@ -101,7 +100,7 @@ def block_of(address):
     return "Other areas"
 
 
-def find_file(folder_list, tokens, exclude=("prefill", "dummy", "~$")):
+def find_file(folder_list, tokens, exclude=("prefill", "~$")):
     """Newest data file whose name matches any token."""
     best = None
     for folder in folder_list:
@@ -290,7 +289,6 @@ def get_password():
 # --------------------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dummy", action="store_true", help="force synthetic demo data")
     ap.add_argument("--set-password", action="store_true")
     args = ap.parse_args()
 
@@ -309,22 +307,13 @@ def main():
 
     frames = {n: load_frame(n) for n in SURVEYS}
     sources, raw = {}, {}
-    if not args.dummy:
-        for n in SURVEYS:
-            tokens = [f"prebaseline{n}", f"pb{n}"]
-            f = find_file([PROJECT / f"Data {n}", HERE], tokens)
-            if f is not None:
-                sources[n], raw[n] = f.name, read_any(f)
-    is_dummy = args.dummy or not raw
-    if is_dummy:
-        sources, raw = {}, {}
-        dd = HERE / "dummy_data"
-        if not (dd / "Inflation_PreBaseline_1_dummy_WIDE.csv").exists():
-            import subprocess
-            subprocess.run([sys.executable, str(HERE / "generate_dummy_data.py")], check=True)
-        for n in SURVEYS:
-            f = dd / f"Inflation_PreBaseline_{n}_dummy_WIDE.csv"
+    for n in SURVEYS:
+        tokens = [f"prebaseline{n}", f"pb{n}"]
+        f = find_file([PROJECT / f"Data {n}", HERE], tokens)
+        if f is not None:
             sources[n], raw[n] = f.name, read_any(f)
+    if not raw:
+        sys.exit("No SurveyCTO export found in Data 1 / Data 2 folders - nothing to build.")
     for n in SURVEYS:
         print(f"PB{n}: {sources.get(n, '— no data yet —')}  ({len(raw[n]) if n in raw else 0} rows)")
 
@@ -350,7 +339,7 @@ def main():
     last = max((r["d"] for r in valid), default=None)
     now = datetime.now()
     payload = {
-        "meta": {"is_dummy": bool(is_dummy), "last_date": last,
+        "meta": {"last_date": last,
                  "generated": now.strftime("%d %b %Y, %I:%M %p").lstrip("0"),
                  "surveys": survey_meta, "valid_range": cfg["valid_inflation_range"]},
         "records": records,
@@ -364,14 +353,14 @@ def main():
     assert not bad, f"Non-whitelisted fields in payload: {bad}"
 
     tpl = (HERE / "dashboard_template.html").read_text(encoding="utf-8")
-    public = {"title": cfg["title"], "is_dummy": bool(is_dummy), "generated": payload["meta"]["generated"]}
+    public = {"title": cfg["title"], "generated": payload["meta"]["generated"]}
     html = (tpl.replace("__PUBLIC__", json.dumps(public))
                .replace("__PAYLOAD__", json.dumps(encrypt(payload, get_password()))))
     (HERE / "index.html").write_text(html, encoding="utf-8")
 
     done = {n: sum(1 for r in records if r["s"] == n and r["cm"]) for n in SURVEYS}
     print(f"\nindex.html written ({len(html) / 1024:.0f} KB) · completed PB1={done[1]} PB2={done[2]} · "
-          f"{'DUMMY data' if is_dummy else 'LIVE data'} · encrypted payload")
+          "LIVE data · encrypted payload")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,6 @@
 *.xls
 *.zip
 *.rar
-dummy_data/
 reference/
 password.local.txt
 *.local.*
