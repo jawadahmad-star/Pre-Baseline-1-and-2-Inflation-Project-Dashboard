@@ -179,6 +179,13 @@ def rating(s, lo=0, hi=10):
     return x.where((x >= lo) & (x <= hi))
 
 
+def basket_pct(s):
+    """Basket question ("Rs 100 today costs ... in 12 months") -> expected inflation %.
+    998 / 999 (refused / don't know) and out-of-range prices -> NaN."""
+    x = num(s)
+    return (x.where((x >= 0) & (x <= 1000)) - 100)
+
+
 def pct_change(today, later):
     """% change from today to later; undefined when today is missing or not positive."""
     return ((later - today) / today * 100).where(today > 0)
@@ -233,6 +240,11 @@ def build_records(n, df, frame, choices, enum_map):
     ten = num(g(TEN_Y[n])) + num(g(TEN_M[n])).fillna(0) / 12
     fy = num(g(FY[n])) + num(g(FM[n])).fillna(0) / 12
 
+    # expected inflation % from the Rs-100 basket questions (price - 100)
+    b_pt = basket_pct(g("pb1b_1_point" if n == 1 else "pb2a_1_point"))
+    if n == 1:
+        b_lo, b_hi = basket_pct(g("pb1b_2_low")), basket_pct(g("pb1b_3_high"))
+        d_pt, d_lo, d_hi = basket_pct(g("pb1d_2_likely")), basket_pct(g("pb1d_1_low")), basket_pct(g("pb1d_3_high"))
     if n == 1:      # planned % change over 3 months, before (C) and after (E) the forecast, both vs today's value
         today = {m: num(g(f"pb1c_{m}_today")) for m in DECISIONS}
         pc = {m: pct_change(today[m], num(g(f"pb1c_{m}_3m"))) for m in DECISIONS}
@@ -266,8 +278,8 @@ def build_records(n, df, frame, choices, enum_map):
         }
         if n == 1:
             rec.update(
-                e1=clean(num(g("pb1b_1_point"))[i]), elo=clean(num(g("pb1b_2_low"))[i]), ehi=clean(num(g("pb1b_3_high"))[i]),
-                pm=clean(num(g("pb1d_2_likely"))[i]), plo=clean(num(g("pb1d_1_low"))[i]), phi=clean(num(g("pb1d_3_high"))[i]),
+                e1=clean(b_pt[i]), elo=clean(b_lo[i]), ehi=clean(b_hi[i]),
+                pm=clean(d_pt[i]), plo=clean(d_lo[i]), phi=clean(d_hi[i]),
                 un1=clean(num(g("pb1a_1_understand"))[i]), un2=clean(num(g("pb1a_3_understand_after"))[i]),
                 calc=(None if pd.isna(num(g("pb1a_4_price"))[i]) else int(abs(num(g("pb1a_4_price"))[i] - 103) < 1e-6)),
                 fr=clean(num(g("pb1a_5_framing"))[i]),
@@ -276,7 +288,7 @@ def build_records(n, df, frame, choices, enum_map):
         else:
             v = lambda ser: clean(ser[i])
             rec.update(
-                e1=clean(num(g("pb2a_1_point"))[i]),
+                e1=clean(b_pt[i]),
                 src=[v(r_src[k]) for k in SRC],
                 nf=clean(num(g("pb2b_2_n_firms"))[i]), dcat=clean(num(g("pb2b_2a_dist_cat"))[i]),
                 sn=v(shops_near), sf=v(shops_far),
