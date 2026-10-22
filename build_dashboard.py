@@ -57,10 +57,13 @@ AREA = {1: "pb1g_1_area", 2: "pb2d_1_area"}
 EMP = {1: "pb1g_2_employees", 2: "pb2d_2_employees"}
 FY = {1: "pb1g_3_years", 2: "pb2d_3_years"}
 FM = {1: "pb1g_3_months", 2: "pb2d_3_months"}
-MARGINS = ["1_price", "2_wage", "3_debt", "4_invest", "5_hours", "6_emp_ft", "7_emp_pt", "8_emp_unpaid"]
+DECISIONS = ["a", "b", "c"]               # PB1-C/E: a = main product price, b / c = two other decisions the manager names
 SRC = ["a_costs", "b_domestic", "c_intl", "d_firms", "e_social"]
 FREQ = ["any", "prices", "costs", "infl"]
-MQ = ["start", "knew", "numbers", "advice", "check", "adjust", "prompt"]
+WHY = ["1_actions", "2_content", "3_credibility", "4_recall"]                                  # PB2-B 4a, 1-10
+MQ = ["1_start", "2_knew", "3_numbers", "4_advice", "5_check", "6_adjust", "7_prompt"]         # PB2-B 4b, 1-10
+REL = ["1_supplier", "2_customer", "3_competitor", "4_cooperation", "5_workers", "6_social",
+       "7_duration", "8_proximity", "9_assoc"]                                                 # PB2-B 4c, 1-10
 AGE_BINS = [(18, 24, "18–24"), (25, 34, "25–34"), (35, 44, "35–44"), (45, 54, "45–54"), (55, 120, "55+")]
 
 # Blocks of Allama Iqbal Town: spelling variants in the Google-Places addresses -> one name
@@ -170,6 +173,17 @@ def age_group(a):
     return AGE_BINS[0][2] if a < 18 else None
 
 
+def rating(s, lo=0, hi=10):
+    """Rating scale; 998 / 999 (refused / don't know) and out-of-range values -> NaN."""
+    x = num(s)
+    return x.where((x >= lo) & (x <= hi))
+
+
+def pct_change(today, later):
+    """% change from today to later; undefined when today is missing or not positive."""
+    return ((later - today) / today * 100).where(today > 0)
+
+
 def multi(v):
     if v is None or (isinstance(v, float) and np.isnan(v)):
         return []
@@ -198,8 +212,9 @@ def build_records(n, df, frame, choices, enum_map):
     lab = lambda ln: {v: l for v, l in choices.get(ln, [])}
     shop_l, edu_l, status_l = lab("shop_type"), lab("educ4"), lab("status_survey")
     df = df.copy()
-    if "KEY" in df.columns:
-        df = df.drop_duplicates("KEY", keep="last")
+    key = next((c for c in ("KEY", "key") if c in df.columns), None)      # .dta exports lower-case the name
+    if key:
+        df = df.drop_duplicates(key, keep="last")
     df["_d"] = parse_dates(df)
     df = df[df["_d"].notna()]
     blk_of = dict(zip(frame["firm_id"].astype(int), frame["blk"]))
@@ -218,6 +233,17 @@ def build_records(n, df, frame, choices, enum_map):
     ten = num(g(TEN_Y[n])) + num(g(TEN_M[n])).fillna(0) / 12
     fy = num(g(FY[n])) + num(g(FM[n])).fillna(0) / 12
 
+    if n == 1:      # planned % change over 3 months, before (C) and after (E) the forecast, both vs today's value
+        today = {m: num(g(f"pb1c_{m}_today")) for m in DECISIONS}
+        pc = {m: pct_change(today[m], num(g(f"pb1c_{m}_3m"))) for m in DECISIONS}
+        pe = {m: pct_change(today[m], num(g(f"pb1e_{m}_3m"))) for m in DECISIONS}
+    else:
+        r_src = {k: rating(g(f"pb2b_1_{k}")) for k in SRC}
+        r_why = {k: rating(g(f"pb2b_4a_{k}"), 1) for k in WHY}
+        r_mq = {k: rating(g(f"pb2b_4b_{k}"), 1) for k in MQ}
+        r_rel = {k: rating(g(f"pb2b_4c_{k}"), 1) for k in REL}
+        shops_near, shops_far = num(g("pb2b_2b_shops")), num(g("pb2b_2c_shops"))
+        shops_near, shops_far = shops_near.where(shops_near < 998), shops_far.where(shops_far < 998)
     recs = []
     for i in df.index:
         sc = status.get(i)
@@ -245,18 +271,17 @@ def build_records(n, df, frame, choices, enum_map):
                 un1=clean(num(g("pb1a_1_understand"))[i]), un2=clean(num(g("pb1a_3_understand_after"))[i]),
                 calc=(None if pd.isna(num(g("pb1a_4_price"))[i]) else int(abs(num(g("pb1a_4_price"))[i] - 103) < 1e-6)),
                 fr=clean(num(g("pb1a_5_framing"))[i]),
-                c=[clean(num(g(f"pb1c_{m}_3m"))[i]) for m in MARGINS],
-                e=[clean(num(g(f"pb1e_{m}_3m"))[i]) for m in MARGINS])
+                c=[clean(round(pc[m][i], 1)) if pd.notna(pc[m][i]) else None for m in DECISIONS],
+                e=[clean(round(pe[m][i], 1)) if pd.notna(pe[m][i]) else None for m in DECISIONS])
         else:
+            v = lambda ser: clean(ser[i])
             rec.update(
                 e1=clean(num(g("pb2a_1_point"))[i]),
-                src=[clean(num(g(f"pb2b_1_{k}"))[i]) for k in SRC],
+                src=[v(r_src[k]) for k in SRC],
                 nf=clean(num(g("pb2b_2_n_firms"))[i]), dcat=clean(num(g("pb2b_2a_dist_cat"))[i]),
+                sn=v(shops_near), sf=v(shops_far),
                 fq=[clean(num(g(f"pb2b_3_{k}"))[i]) for k in FREQ],
-                mem=clean(num(g("pb2b_4_memorable"))[i]),
-                mq=[clean(num(g(f"pb2b_4b_{j + 1}_{k}"))[i]) for j, k in enumerate(MQ)],
-                rel=multi(g("pb2b_4c_1_bus")[i]), soc=clean(num(g("pb2b_4c_4_social"))[i]),
-                kn=clean(num(g("pb2b_4c_5_known"))[i]), tw=clean(num(g("pb2b_4c_7_times"))[i]),
+                why=[v(r_why[k]) for k in WHY], mq=[v(r_mq[k]) for k in MQ], rt=[v(r_rel[k]) for k in REL],
                 attr=multi(g("pb2b_5_attr")[i]) if str(g("pb2b_5_firm")[i]).strip() not in ("999", "nan", "") else [])
         recs.append(rec)
     return recs
@@ -301,8 +326,7 @@ def main():
         return
 
     choices = load_choices()
-    enum_codes = [v for v, _ in choices.get("enum_name", []) if v != "777"]
-    enum_map = {int(v): f"Enumerator {i + 1:02d}" for i, v in enumerate(sorted(enum_codes, key=int))}
+    enum_map = {int(v): l for v, l in choices.get("enum_name", []) if v.isdigit() and v != "777"}   # code -> name (enum_label)
     enum_map[777] = "Other enumerator"
 
     frames = {n: load_frame(n) for n in SURVEYS}
@@ -344,11 +368,11 @@ def main():
                  "surveys": survey_meta, "valid_range": cfg["valid_inflation_range"]},
         "records": records,
         "lists": {k: choices.get(k, []) for k in
-                  ("educ4", "understand3", "framing3", "dist_cat", "freq5", "ymnd4", "bus_rel", "soc_rel", "known_dur", "key_attr", "status_survey")},
+                  ("educ4", "understand3", "framing3", "dist_cat", "freq5", "key_attr", "status_survey")},
     }
     # ---- PII guard: only whitelisted keys may be present ----
     allowed = {"s", "d", "blk", "rl", "st", "en", "oc", "ou", "cm", "ed", "age", "ag", "dur", "mt", "fy", "emp", "area", "e1", "elo", "ehi",
-               "pm", "plo", "phi", "un1", "un2", "calc", "fr", "c", "e", "src", "nf", "dcat", "fq", "mem", "mq", "rel", "soc", "kn", "tw", "attr"}
+               "pm", "plo", "phi", "un1", "un2", "calc", "fr", "c", "e", "src", "nf", "dcat", "sn", "sf", "fq", "why", "mq", "rt", "attr"}
     bad = {k for r in records for k in r} - allowed
     assert not bad, f"Non-whitelisted fields in payload: {bad}"
 

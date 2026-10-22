@@ -533,7 +533,7 @@
     <div class="chart-grid cols-3">
       <div class="chart-card"><h3>Employees per Shop</h3><div class="chart-desc">Excluding the manager</div><div class="chart-wrap"><canvas id="chartPfEmp"></canvas></div></div>
       <div class="chart-card"><h3>Years in Operation</h3><div class="chart-desc">Age of the shop</div><div class="chart-wrap"><canvas id="chartPfFirmAge"></canvas></div></div>
-      <div class="chart-card"><h3>Shop Floor Area</h3><div class="chart-desc">Square metres</div><div class="chart-wrap"><canvas id="chartPfArea"></canvas></div></div>
+      <div class="chart-card"><h3>Shop Floor Area</h3><div class="chart-desc">Square feet (1 marla = 225 sq ft)</div><div class="chart-wrap"><canvas id="chartPfArea"></canvas></div></div>
     </div>
     <p class="footnote">Education and age are reported by the manager. Shop type is recorded by the enumerator at the shop front. Only completed interviews are included.</p>
   </div>
@@ -572,7 +572,7 @@
       <div>
         <div class="eyebrow">Section 04 · Pre-Baseline 1 · Modules A, C &amp; E</div>
         <h2>Understanding &amp; Planned Decisions <span class="warn-pill" style="vertical-align:middle;font-size:11px">Pre-Baseline 1 only</span></h2>
-        <p>How well managers understand inflation, which way they say they will adjust prices, wages, borrowing, investment and staffing over the next three months, and how those plans change once they are told the official inflation forecast.</p>
+        <p>How well managers understand inflation, how they plan to change the price of their main product and two other business decisions they name themselves over the next three months, and how those plans change once they are told the official inflation forecast.</p>
       </div>
     </div>
     <div class="kpi-grid" id="m1-kpis"></div>
@@ -589,7 +589,7 @@
       <div class="chart-card"><h3>Direction of Plans — Before Information</h3><div class="chart-desc">Stacked: share of managers planning to decrease, keep or increase</div><div class="chart-wrap auto"><canvas id="chartDecPre"></canvas></div></div>
       <div class="chart-card"><h3>Direction of Plans — After Information</h3><div class="chart-desc">Same decisions after being told inflation is expected to be 8.4%</div><div class="chart-wrap auto"><canvas id="chartDecPost"></canvas></div></div>
     </div>
-    <p class="footnote">Planned changes are % change versus the current level over the next 3 months (0 = no change). Employee counts and hours are as stated by the manager. Extreme values (beyond ±100%) are excluded from averages.</p>
+    <p class="footnote">Planned change = (value planned in 3 months − current value) ÷ current value. The 2nd and 3rd decisions are named by each manager (mostly the price of another product), so they are pooled; a decision with a current value of 0 or left blank is left out. Extreme values (beyond ±100%) are excluded from averages.</p>
   </div>
 
   <!-- ---------- PB2 MODULE ---------- -->
@@ -599,7 +599,7 @@
       <div>
         <div class="eyebrow">Section 04 · Pre-Baseline 2 · Module B</div>
         <h2>Communication Network <span class="warn-pill" style="vertical-align:middle;font-size:11px">Pre-Baseline 2 only</span></h2>
-        <p>Where managers get their inflation information, how often and how far they talk to other firms in the bazaar, and what makes a conversation memorable — a picture of how inflation information travels between shops.</p>
+        <p>Where managers get their inflation information, how often and how far they talk to other firms in the bazaar, why those conversations matter and who the firms are — a picture of how inflation information travels between shops.</p>
       </div>
     </div>
     <div class="kpi-grid" id="m2-kpis"></div>
@@ -609,21 +609,21 @@
     </div>
     <div class="chart-grid cols-3">
       <div class="chart-card"><h3>How Far Away Are These Firms?</h3><div class="chart-desc">Among managers who spoke with at least one firm</div><div class="chart-wrap"><canvas id="chartDist"></canvas></div></div>
-      <div class="chart-card"><h3>Memorable Conversation</h3><div class="chart-desc">Recalled a conversation that affected expectations</div><div class="chart-wrap"><canvas id="chartMem"></canvas></div></div>
-      <div class="chart-card"><h3>Social Tie to That Firm</h3><div class="chart-desc">Among memorable conversations</div><div class="chart-wrap"><canvas id="chartSoc"></canvas></div></div>
+      <div class="chart-card"><h3>Shops Away: Most Firms</h3><div class="chart-desc">How many shops away most of the firms they spoke with are</div><div class="chart-wrap"><canvas id="chartShopsNear"></canvas></div></div>
+      <div class="chart-card"><h3>Shops Away: Farthest Firm</h3><div class="chart-desc">How many shops away the farthest firm they spoke with is</div><div class="chart-wrap"><canvas id="chartShopsFar"></canvas></div></div>
     </div>
     <div class="chart-grid">
       <div class="chart-card full"><h3>How Often Managers Talk With Other Firms</h3><div class="chart-desc">Stacked: share of managers by frequency of conversation, for each topic (last 3 months)</div><div class="chart-wrap tall"><canvas id="chartFreq"></canvas></div></div>
     </div>
-    <div class="chart-grid">
-      <div class="chart-card full"><h3>What Happened in the Memorable Conversation</h3><div class="chart-desc">Stacked: yes / maybe / no / don't know for each statement</div><div class="chart-wrap tall"><canvas id="chartMq"></canvas></div></div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Why Conversations Shaped Expectations</h3><div class="chart-desc">Average rating from 1 (low) to 10 (high) for why these conversations mattered for the manager’s inflation expectations</div><div class="chart-wrap tall"><canvas id="chartWhy"></canvas></div></div>
+      <div class="chart-card"><h3>What Happened in These Conversations</h3><div class="chart-desc">Average rating from 1 (low) to 10 (high) for how much each statement applied</div><div class="chart-wrap tall"><canvas id="chartMq"></canvas></div></div>
     </div>
-    <div class="chart-grid cols-3">
-      <div class="chart-card"><h3>Business Relationship With That Firm</h3><div class="chart-desc">Multiple response — managers selecting each</div><div class="chart-wrap tall"><canvas id="chartRel"></canvas></div></div>
-      <div class="chart-card"><h3>How Long Have They Known the Firm?</h3><div class="chart-desc">Among memorable conversations</div><div class="chart-wrap tall"><canvas id="chartKnown"></canvas></div></div>
+    <div class="chart-grid cols-2">
+      <div class="chart-card"><h3>Who Are the Firms They Talk To?</h3><div class="chart-desc">Average rating from 1 (rare) to 10 (very common) for each type of relationship or characteristic</div><div class="chart-wrap tall"><canvas id="chartRel"></canvas></div></div>
       <div class="chart-card"><h3>Who Should Spread the Message?</h3><div class="chart-desc">Key attribute of the firm managers would pick to spread inflation information (multiple response)</div><div class="chart-wrap tall"><canvas id="chartAttr"></canvas></div></div>
     </div>
-    <p class="footnote">Source ratings are means on the 0–10 scale. Conversation details are asked only of managers who recalled a memorable conversation, so those bases are smaller than the full completed sample.</p>
+    <p class="footnote">Source ratings are means on the 0–10 scale; conversation and relationship ratings are means on the 1–10 scale. “Don’t know” and “refused” answers are excluded from the averages. Distance questions are asked only of managers who spoke with at least one firm.</p>
   </div>
 
   <!-- ---------- TRACKER ---------- -->
@@ -1333,7 +1333,7 @@ function drawProf(){
   barChart('chartPfBlock', asPct(tally(d, r=>r.blk)), S(5), true, '%');
   barChart('chartPfEmp', asPct(tally(d, r=>bandOf(r.emp,[1,3,6,11],['None','1–2','3–5','6–10','11+']), ['None','1–2','3–5','6–10','11+'])), S(6), false, '%');
   barChart('chartPfFirmAge', asPct(tally(d, r=>bandOf(r.fy,[2,5,10,20],['<2 yrs','2–4','5–9','10–19','20+']), ['<2 yrs','2–4','5–9','10–19','20+'])), S(4), false, '%');
-  barChart('chartPfArea', asPct(tally(d, r=>bandOf(r.area,[20,50,100,200],['<20','20–49','50–99','100–199','200+']), ['<20','20–49','50–99','100–199','200+'])), S(7), false, '%');
+  barChart('chartPfArea', asPct(tally(d, r=>bandOf(r.area,[250,500,1000,2000],['<250','250–499','500–999','1,000–1,999','2,000+']), ['<250','250–499','500–999','1,000–1,999','2,000+'])), S(7), false, '%');
 }
 
 // ============================================================
@@ -1370,7 +1370,7 @@ function drawExp(){
 // ============================================================
 //  PANEL: PB1 — UNDERSTANDING & DECISIONS
 // ============================================================
-const MARGIN_LABELS = ['Price of main products','Monthly wage bill','Borrowing / debt','Investment','Total labour hours','Employees: full-time','Employees: part-time','Employees: unpaid'];
+const MARGIN_LABELS = ['Price of main product','2nd decision named by manager','3rd decision named by manager'];
 function topFraming(d){
   const t = tally(d.filter(r=>r.fr!=null), r=>r.fr).sort((a,b)=>b.value-a.value)[0];
   return t ? ({'1':'“6%” form','2':'“Rs 100→106”','3':'Both equal'}[t.label] || '—') : '—';
@@ -1412,37 +1412,38 @@ function drawMod1(){
 // ============================================================
 const SRC_LABELS = ['Own business costs','Official sources in Pakistan (SBP)','International sources (e.g. IMF)','Talking to other firms','Family, friends & social media'];
 const FREQ_TOPICS = ['Anything','Prices of your product','Business expenses','Inflation in general'];
+const WHY_LABELS = ['Saw what the firm was doing (prices, orders)','Gave useful information','Trusted the firm’s information / opinion','Explained in a way that is easy to recall'];
 const MQ_LABELS = ['Discussion started about prices / costs','Already knew the inflation forecast','Exact inflation numbers discussed','Sought their advice on inflation','Checked official statistics afterwards','Adjusted business decisions afterwards','Prompted talks with other firms'];
+const REL_LABELS = ['Supplier','Customer','Competitor','Business cooperation','Shared or former workers','Social relationship (friends, family)','Known for more than 3 months','Located within 5 shops','Part of the association (union)'];
+const SHOP_BANDS = ['1','2','3–4','5–9','10+'];
+const meanBars = (d, key, labels) => labels.map((l,i)=>({label:l, value:r1(mean(d.map(r=>r[key] ? r[key][i] : null)))})).filter(x=>x.value!=null);
 function drawMod2(){
   const d = DONE();
-  const nf = d.filter(r=>r.nf!=null), mem = d.filter(r=>r.mem!=null);
-  const srcMeans = SRC_LABELS.map((l,i)=>({label:l, value:r1(mean(d.map(r=>r.src ? r.src[i] : null)))})).filter(x=>x.value!=null);
-  const topSrc = srcMeans.slice().sort((a,b)=>b.value-a.value)[0];
+  const nf = d.filter(r=>r.nf!=null && r.nf<998);
+  const srcMeans = meanBars(d, 'src', SRC_LABELS), whyMeans = meanBars(d, 'why', WHY_LABELS);
+  const topSrc = srcMeans.slice().sort((a,b)=>b.value-a.value)[0], topWhy = whyMeans.slice().sort((a,b)=>b.value-a.value)[0];
   const weekly = d.filter(r=>r.fq && r.fq.slice(0,4).some(f=>f===1 || f===2));
   $('m2-kpis').innerHTML =
     kpi('🗣️', fx(mean(nf.map(r=>r.nf))), 'Avg Firms Spoken To', 'Over the past 3 months', 'navy', 'navy') +
     kpi('🤝', (share(nf.filter(r=>r.nf>0).length, nf.length) ?? '—') + (nf.length?'%':''), 'Talked With ≥1 Other Firm', 'About inflation', 'up', 'green') +
-    kpi('💡', (share(mem.filter(r=>r.mem===1).length, mem.length) ?? '—') + (mem.length?'%':''), 'Recall a Memorable Conversation', 'That affected expectations', 'neutral', 'amber') +
     kpi('⭐', topSrc ? topSrc.value+' / 10' : '—', 'Top-Rated Information Source', topSrc ? topSrc.label : '—', 'neutral', 'purple') +
+    kpi('💡', topWhy ? topWhy.value+' / 10' : '—', 'Top Reason a Conversation Mattered', topWhy ? topWhy.label : '—', 'neutral', 'amber') +
     kpi('📆', (share(weekly.length, d.filter(r=>r.fq).length) ?? '—') + (d.some(r=>r.fq)?'%':''), 'Talk at Least Weekly', 'On any topic', 'neutral', 'teal');
 
   barChart('chartSrc', srcMeans, S(1), true);
   barChart('chartNF', asPct(tally(nf, r=>bandOf(r.nf,[1,2,3,5,8],['0','1','2','3–4','5–7','8+']), ['0','1','2','3–4','5–7','8+'])), S(4), false, '%');
   donutChart('chartDist', tally(d.filter(r=>r.nf>0 && r.dcat!=null), r=>listLabel('dist_cat', r.dcat), listLabels('dist_cat')), PALETTE());
-  donutChart('chartMem', tally(mem, r=>r.mem===1 ? 'Yes' : 'No', ['Yes','No']), [S(6), MUTED()]);
-  donutChart('chartSoc', tally(d.filter(r=>r.mem===1 && r.soc!=null), r=>listLabel('soc_rel', r.soc), listLabels('soc_rel')), [S(3), S(4), MUTED()]);
+  const shopBand = v => bandOf(v,[2,3,5,10],SHOP_BANDS);
+  barChart('chartShopsNear', asPct(tally(d.filter(r=>r.sn!=null), r=>shopBand(r.sn), SHOP_BANDS)), S(3), false, '%');
+  barChart('chartShopsFar', asPct(tally(d.filter(r=>r.sf!=null), r=>shopBand(r.sf), SHOP_BANDS)), S(5), false, '%');
 
   const FQ = listLabels('freq5'), rowsF = d.filter(r=>r.fq).flatMap(r=>FREQ_TOPICS.map((t,i)=>({t, v: r.fq[i]!=null ? listLabel('freq5', r.fq[i]) : null}))).filter(x=>x.v);
   const sf = stackPct(rowsF, x=>x.t, x=>x.v, FREQ_TOPICS, FQ, [S(6), S(3), S(1), S(8), MUTED()]);
   stackedChart('chartFreq', sf.cats, sf.series, true);
 
-  const YM = [['Yes',1,S(6)],['Maybe',2,S(8)],['No',3,S(2)],["Don't know",999,MUTED()]];
-  const rowsQ = d.filter(r=>r.mem===1 && r.mq).flatMap(r=>MQ_LABELS.map((q,i)=>({q, v: r.mq[i]!=null ? (YM.find(y=>y[1]===r.mq[i])||[])[0] : null}))).filter(x=>x.v);
-  const sq = stackPct(rowsQ, x=>x.q, x=>x.v, MQ_LABELS, YM.map(y=>y[0]), YM.map(y=>y[2]));
-  stackedChart('chartMq', sq.cats, sq.series, true);
-
-  barChart('chartRel', asPct(tally(d.filter(r=>r.mem===1), r=>(r.rel||[]).map(c=>listLabel('bus_rel', c)), []), d.filter(r=>r.mem===1).length), S(3), true, '%');
-  barChart('chartKnown', asPct(tally(d.filter(r=>r.mem===1 && r.kn!=null), r=>listLabel('known_dur', r.kn), listLabels('known_dur'))), S(5), true, '%');
+  barChart('chartWhy', whyMeans, S(2), true);
+  barChart('chartMq', meanBars(d, 'mq', MQ_LABELS), S(6), true);
+  barChart('chartRel', meanBars(d, 'rt', REL_LABELS), S(3), true);
   barChart('chartAttr', asPct(tally(d, r=>(r.attr||[]).map(c=>listLabel('key_attr', c))), d.length), S(7), true, '%');
 }
 
